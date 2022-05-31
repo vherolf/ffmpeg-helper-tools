@@ -1,11 +1,11 @@
 # slices a video in 3 eqal vertical scenes
 # a video with 5780x1080 will make 3x 1920x1080 scenes
- _______________________________
- |         |         |         |
- | scene 1 | scene 2 | scene 3 |
- |         |         |         |
- |_________|_________|_________|
- 
+# _______________________________
+# |         |         |         |
+# | scene 1 | scene 2 | scene 3 |
+# |         |         |         |
+# |_________|_________|_________|
+
 import os
 from pathlib import Path
 import subprocess
