@@ -47,6 +47,6 @@ def main():
         for file in files:
             if file.endswith( mimetype ):
                 video_slicer(root,file)
- 
+    
 if __name__ == '__main__':
     main()
