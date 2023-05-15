@@ -7,6 +7,11 @@ image_dir = Path(Path.cwd(), 'images')
 
 FFMPEG = 'ffmpeg'
 
+def list_font_families():
+    from tkinter import Tk, font
+    root = Tk()
+    print( font.families() )
+
 # write text in the middle of the image
 def generate_test_image(text=u'1', width=1280, height=720, fontsize=700, fontcolor='black',backgroundcolor='white', image_dir=image_dir):
     font = ImageFont.truetype("FreeMono.ttf", fontsize, encoding="unic")
@@ -29,10 +34,22 @@ def generate_video_from_one_image(image=None, width=1280, height=720, duration=3
                      outputname, '-y' ])
 
 if __name__=='__main__':
-    for text in range(7):
-        generate_test_image( f'{text}', fontcolor='black', backgroundcolor='white' )
-        generate_test_image( f'{text}', fontcolor='white', backgroundcolor='blue' )
-        generate_test_image( f'{text}', fontcolor='white', backgroundcolor='green' )
-        
-    for image in image_dir.glob('*.png'):
-        generate_video_from_one_image(image)
+    import argparse
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument("-l", "--list-fonts-available",default=False, action="store_true")
+    parser.add_argument("-g", "--generate-media", default=True, action="store_true")
+    args = parser.parse_args()
+
+    if args.list_fonts_available:
+        list_font_families()
+        exit()
+
+    if args.generate_media:
+        for text in range(7):
+            generate_test_image( f'{text}', fontcolor='black', backgroundcolor='white' )
+            generate_test_image( f'{text}', fontcolor='white', backgroundcolor='blue' )
+            generate_test_image( f'{text}', fontcolor='white', backgroundcolor='green' )
+            
+        for image in image_dir.glob('*.png'):
+            generate_video_from_one_image(image)
