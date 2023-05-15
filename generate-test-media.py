@@ -1,5 +1,4 @@
 from PIL import Image, ImageDraw, ImageFont
-import os
 from pathlib import Path
 import subprocess
 
@@ -11,8 +10,6 @@ FFMPEG = 'ffmpeg'
 # write text in the middle of the image
 def generate_test_image(text=u'1', width=1280, height=720, fontsize=700, fontcolor='black',backgroundcolor='white', image_dir=image_dir):
     font = ImageFont.truetype("FreeMono.ttf", fontsize, encoding="unic")
-    #textlength = font.getlength(text)
-    #bbox = font.getbbox(text)
     canvas = Image.new('RGB', (width, height), backgroundcolor)
     draw = ImageDraw.Draw(canvas)
     # use anchor="mm" for center in middle (THANK YOU STACK OVERFLOW)
