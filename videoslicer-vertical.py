@@ -26,7 +26,7 @@ video_output = os.path.join(home,'Desktop', 'sliced_videos')
 Path(video_output).mkdir(parents=True, exist_ok=True)
 
 # video container that script searches for
-mimetype = '.mp4'
+mimetype = '.mkv'
 
 # nameing of the file should be "date" + space + "time"
 # eg:   2022-05-24 15-46-07.mkv  
