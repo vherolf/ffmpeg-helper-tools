@@ -2,7 +2,7 @@
 ```ffmpeg -i input.MTS output.mp4```
 
 ## compress videos
-## crf is 0-52 (23 is a good choise)
+crf is 0-52 (23 is a good choise)
 ```ffmpeg -i input.MTS -crf 23 output.mp4```
 
 ## concat videos
