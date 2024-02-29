@@ -16,5 +16,5 @@ ffmpeg -i input.mp4 -filter:v crop=iw/2:ih/2:0:0 -c:a copy output.mp4
 
 ## trim a video
 - The -ss parameter is the starting point.
-- The -t provides the length of the clip
+- The -t provides the length of the clip  
 ffmpeg -i input.mp4 -ss 00:00:10 -t 00:20:00 -async 1 output.mp4
