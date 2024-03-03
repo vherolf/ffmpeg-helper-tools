@@ -23,3 +23,7 @@ https://video.stackexchange.com/questions/4563/how-can-i-crop-a-video-with-ffmpe
 - The -ss parameter is the starting point.
 - The -t provides the length of the clip  
 ```ffmpeg -i input.mp4 -ss 00:00:10 -t 00:20:00 -async 1 output.mp4```
+
+## convert a mp4 to a gif
+
+```ffmpeg -i input.pm4 rainbowunicorn.mp4```
