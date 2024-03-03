@@ -26,4 +26,4 @@ https://video.stackexchange.com/questions/4563/how-can-i-crop-a-video-with-ffmpe
 
 ## convert a mp4 to a gif
 
-```ffmpeg -i input.pm4 rainbowunicorn.mp4```
+```ffmpeg -i input.pm4 rainbowunicorn.gif```
