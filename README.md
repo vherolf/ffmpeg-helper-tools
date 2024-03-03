@@ -1,7 +1,7 @@
 # ffmpeg-helper-tools
 simple python scripts for ffmpeg tasks
 
-# Cheatsheet
+# FFMPEG Cheatsheet
 
 ## convert videos
 ```ffmpeg -i input.MTS output.mp4```
