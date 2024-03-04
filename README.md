@@ -7,7 +7,7 @@ simple python scripts for ffmpeg tasks
 ```ffmpeg -i input.MTS output.mp4```
 
 ## compress videos
-crf is 0-52 (23 is a good choise)  
+crf is 0-52 (23 is a good choice)  
 ```ffmpeg -i input.MTS -crf 23 output.mp4```
 
 ## concat videos
@@ -24,6 +24,6 @@ https://video.stackexchange.com/questions/4563/how-can-i-crop-a-video-with-ffmpe
 - The -t provides the length of the clip  
 ```ffmpeg -i input.mp4 -ss 00:00:10 -t 00:20:00 -async 1 output.mp4```
 
-## convert a mp4 to a gif
+## make animated gif from mp4
 
 ```ffmpeg -i input.pm4 rainbowunicorn.gif```
