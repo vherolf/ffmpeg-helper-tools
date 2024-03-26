@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-# uses ffmpeg with hstack complex_filter
-# side-by-side merge 2 videos
-# a video with 2x 1920x1080 scenes will result in a video with 3840x1080
+# uses ffmpeg with hstack or vstack complex_filter
+# side-by-side merge 2 videos vertical or horizontal
+#
+# e.g. a video with 2x 1920x1080 scenes will result in a video with 3840x1080
 # _____________________
 # |         |         |
 # | scene 1 | scene 2 |
@@ -65,13 +66,21 @@ def video_merger(videos, vertical=False):
             # side-by-side merge the videos vertical with ffmpeg vstack
             subprocess.call(['ffmpeg', '-i', videotop ,'-i', videobottom ,'-filter_complex','vstack=inputs=2', videooutfile, '-y'])
 
-def main():
+def main(vertical=False):
     for root, dirs, files in os.walk( video_input_directory ):
         for file in files:
             if file.endswith( mimetype ):
                 build_video_dict(root, file)
 
-    video_merger(videos, vertical=True)
+    video_merger(videos, vertical=vertical)
 
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--vertical",default=False, action="store_true")
+    args = parser.parse_args()
+
+    if args.vertical:
+        main(vertical=True)
+    else:
+        main(vertical=False)
