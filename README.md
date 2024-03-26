@@ -1,5 +1,5 @@
 # ffmpeg-helper-tools
-simple python scripts for ffmpeg tasks
+simple python scripts for ffmpeg batch tasks  
 
 # FFMPEG Cheatsheet
 
@@ -7,7 +7,7 @@ simple python scripts for ffmpeg tasks
 ```ffmpeg -i input.MTS output.mp4```
 
 ## compress videos
-crf is 0-52 (23 is a good choice)  
+crf is 0-52 (23-28 is a good choice)  
 compress the videos with ffmpeg to h.265 (better)  
 ```ffmpeg -i videoin.mp4 -vcodec libx265 -crf 28 -c:a copy videoout.mp4 -y```
 compress the videos with ffmpeg to h.264 (for legacy systems)  

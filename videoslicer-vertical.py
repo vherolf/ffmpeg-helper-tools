@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # uses ffmpeg crop filter
 # slices a video in 2 eqal vertical scenes
 # a video with 1920x1080 will be cuted vertical

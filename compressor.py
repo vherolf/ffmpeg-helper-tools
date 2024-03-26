@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # recursive batch compressor with ffmpeg
 
 import os
@@ -31,9 +32,9 @@ def video_compressor(root, file):
     videoout = Path(videooutdir , videoin.stem +'.mp4')
     
     print('compressing', videoin, 'to', videoout)
-    # compress the videos with ffmpeg to h.265 (better)
+    ## compress the videos with ffmpeg to h.265 (better)
     #subprocess.call(['ffmpeg', '-i', videoin, '-vcodec', 'libx265','-crf', '28', '-c:a', 'copy', videoout, '-y' ])
-    # compress the videos with ffmpeg to h.264 (for legacy systems)
+    ## compress the videos with ffmpeg to h.264 (for legacy systems)
     subprocess.call(['ffmpeg', '-i', videoin, '-crf', '28', '-c:a', 'copy', videoout, '-y' ])
     
 def main():

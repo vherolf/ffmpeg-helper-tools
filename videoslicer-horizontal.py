@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # uses ffmpeg crop filter
 # slices a video in 3 eqal vertical scenes
 # a video with 5780x1080 will make 3x 1920x1080 scenes

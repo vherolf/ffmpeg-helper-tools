@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # uses ffmpeg
 # side-by-side merge 2 videos
 # a video with 2x 1920x1080 scenes will result in a video with 3840x1080
@@ -51,12 +52,14 @@ def video_merger(videos):
         videotop = Path(root, files[0])
         videobottom = Path(root, files[1])
         
-        videoout = Path(video_output_directory)
+        videooutdir = Path(video_output_directory, relative_dir.lstrip('/'))
+        videooutdir.mkdir(parents=True, exist_ok=True)
+        videooutfile = Path(videooutdir, 'out.mp4' )
 
-        print(relative_dir, videoout, videobottom, videotop)
+        print( videooutfile, videobottom, videotop)
 
-    # side-by-side merge the videos with ffmpeg
-    #subprocess.call(['ffmpeg', '-i', videotop ,'-i', videobottom ,'-filter_complex','[0:v][1:v]hstack,format=yuv420p[v];[0:a][1:a]amerge[a]','-map','[v]','-map','[a]','-c:v','libx264','-crf 23','-ac','2', videoout])
+        # side-by-side merge the videos with ffmpeg
+        subprocess.call(['ffmpeg', '-i', videotop ,'-i', videobottom ,'-filter_complex','hstack=inputs=2', videooutfile, '-y'])
 
 def main():
     for root, dirs, files in os.walk( video_input_directory ):

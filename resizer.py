@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # recursive batch resizer with ffmpeg
 
 import os
