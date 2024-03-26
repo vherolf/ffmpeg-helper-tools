@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# uses ffmpeg
+# uses ffmpeg with hstack complex_filter
 # side-by-side merge 2 videos
 # a video with 2x 1920x1080 scenes will result in a video with 3840x1080
 # _____________________
