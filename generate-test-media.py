@@ -1,9 +1,11 @@
 from PIL import Image, ImageDraw, ImageFont
 from pathlib import Path
 import subprocess
+import shutil
 
 video_dir = Path(Path.cwd(), 'videos')
 image_dir = Path(Path.cwd(), 'images')
+video_dir_merge = Path(Path.cwd(), 'videos_merge')
 
 FFMPEG = 'ffmpeg'
 
@@ -55,3 +57,11 @@ if __name__=='__main__':
             
         for image in image_dir.glob('*.png'):
             generate_video_from_one_image(image)
+
+        for i in range(7):
+            dir = Path(video_dir_merge, str(i)) 
+            dir.mkdir(parents=True, exist_ok=True)
+            video1 = Path(video_dir, f'blue{i}.mp4')
+            video2 = Path(video_dir, f'green{i}.mp4')
+            shutil.copy(video1, dir)
+            shutil.copy(video2, dir)       
