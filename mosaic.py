@@ -38,7 +38,7 @@ def build_video_dict(root, file):
     else:
         videos[root] = [file]
 
-def video_merger(videos):
+def video_merger(videos, vertical=False):
 
     for root,files in videos.items():
         #check if only 2 videos in folder
@@ -58,8 +58,12 @@ def video_merger(videos):
 
         print( videooutfile, videobottom, videotop)
 
-        # side-by-side merge the videos with ffmpeg
-        subprocess.call(['ffmpeg', '-i', videotop ,'-i', videobottom ,'-filter_complex','hstack=inputs=2', videooutfile, '-y'])
+        if vertical == False:
+            # side-by-side merge the videos horizontal with ffmpeg hstack
+            subprocess.call(['ffmpeg', '-i', videotop ,'-i', videobottom ,'-filter_complex','hstack=inputs=2', videooutfile, '-y'])
+        elif vertical == True:
+            # side-by-side merge the videos vertical with ffmpeg vstack
+            subprocess.call(['ffmpeg', '-i', videotop ,'-i', videobottom ,'-filter_complex','vstack=inputs=2', videooutfile, '-y'])
 
 def main():
     for root, dirs, files in os.walk( video_input_directory ):
@@ -67,8 +71,7 @@ def main():
             if file.endswith( mimetype ):
                 build_video_dict(root, file)
 
-    video_merger(videos)
-    #print(videos)
+    video_merger(videos, vertical=True)
 
 if __name__ == '__main__':
     main()

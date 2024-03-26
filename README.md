@@ -4,14 +4,14 @@ simple python scripts for ffmpeg batch tasks
 # FFMPEG Cheatsheet
 
 ## convert videos
-```ffmpeg -i input.MTS output.mp4```
+```ffmpeg -i input.MTS output.mp4```  
 
 ## compress videos
 crf is 0-52 (23-28 is a good choice)  
 compress the videos with ffmpeg to h.265 (better)  
-```ffmpeg -i videoin.mp4 -vcodec libx265 -crf 28 -c:a copy videoout.mp4 -y```
+```ffmpeg -i videoin.mp4 -vcodec libx265 -crf 28 -c:a copy videoout.mp4 -y```  
 compress the videos with ffmpeg to h.264 (for legacy systems)  
-```ffmpeg -i input.MTS -crf 23 output.mp4```
+```ffmpeg -i input.MTS -crf 23 output.mp4```  
 
 ## concat videos
 ```ffmpeg -i "concat:00008.MTS|00009.MTS|00021.MTS|00010.MTS" -crf 23  output.mp4```
