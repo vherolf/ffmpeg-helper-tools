@@ -6,8 +6,11 @@ import subprocess
 import shutil
 
 video_dir = Path(Path.cwd(), 'videos')
+video_dir.mkdir(parents=True, exist_ok=True)
 image_dir = Path(Path.cwd(), 'images')
+image_dir.mkdir(parents=True, exist_ok=True)
 video_dir_merge = Path(Path.cwd(), 'videos_merge')
+video_dir_merge.mkdir(parents=True, exist_ok=True)
 
 FFMPEG = 'ffmpeg'
 

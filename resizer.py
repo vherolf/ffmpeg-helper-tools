@@ -16,9 +16,6 @@ video_output_directory = Path(home,'Desktop', 'compressed_videos')
 Path(video_output_directory).mkdir(parents=True, exist_ok=True)
 
 # video container that script searches for
-#mimetype = '.mkv'
-#mimetype = '.MTS'
-#mimetype = '.MP4'
 mimetype = ['.mp4','.MP4','.MTS','mkv']
 
 def video_resize(root, file):
@@ -32,7 +29,7 @@ def video_resize(root, file):
     videoout = Path(videooutdir , videoin.stem +'.mp4')
     
     print('compressing', videoin, 'to', videoout)
-    # search ffmpeg resize 
+    ## search ffmpeg resize 
     #subprocess.call(['ffmpeg', '-i', videoin, '-crf', '28', '-c:a', 'copy', videoout, '-y' ])
     
 def main():

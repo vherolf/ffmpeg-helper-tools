@@ -16,10 +16,6 @@ video_output_directory = Path(home,'Desktop', 'compressed_videos')
 Path(video_output_directory).mkdir(parents=True, exist_ok=True)
 
 # video container that script searches for
-#mimetype = '.mkv'
-#mimetype = '.MTS'
-#mimetype = '.MP4'
-#mimetype = '.mp4'
 mimetype = ['.mp4','.MP4','.MTS','mkv']
 
 def video_compressor(root, file):
@@ -38,12 +34,6 @@ def video_compressor(root, file):
     ## compress the videos with ffmpeg to h.264 (for legacy systems)
     subprocess.call(['ffmpeg', '-i', videoin, '-crf', '28', '-c:a', 'copy', videoout, '-y' ])
     
-#def main():
-#    for root, dirs, files in os.walk( video_input_directory ):
-#        for file in files:
-#            if file.endswith( mimetype ):
-#                video_compressor(root, file)
-
 def main():
     for root, dirs, files in os.walk( video_input_directory ):
         for file in files:
