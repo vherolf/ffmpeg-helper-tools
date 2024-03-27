@@ -1,5 +1,7 @@
 build==1.1.1
 click==8.1.7
+ffmpeg-python==0.2.0
+future==1.0.0
 packaging==24.0
 pillow==10.2.0
 pip-tools==7.4.1
