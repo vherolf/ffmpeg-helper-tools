@@ -17,9 +17,9 @@ Path(video_output_directory).mkdir(parents=True, exist_ok=True)
 
 # video container that script searches for
 #mimetype = '.mkv'
-mimetype = '.MTS'
+#mimetype = '.MTS'
 #mimetype = '.MP4'
-#mimetype = '.mp4'
+mimetype = ['.mp4','.MP4','.MTS','mkv']
 
 def video_resize(root, file):
     # make relative directory structure in output location
@@ -38,7 +38,8 @@ def video_resize(root, file):
 def main():
     for root, dirs, files in os.walk( video_input_directory ):
         for file in files:
-            if file.endswith( mimetype ):
+            name, extension = os.path.splitext(file)
+            if extension in mimetype:
                 video_resize(root, file)
     
 if __name__ == '__main__':

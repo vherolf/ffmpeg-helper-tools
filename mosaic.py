@@ -27,8 +27,9 @@ video_output_directory = os.path.join(home,'Desktop', 'merged_videos')
 Path(video_output_directory).mkdir(parents=True, exist_ok=True)
 
 # video container that script searches for
-mimetype = '.mp4'
+#mimetype = '.mp4'
 #mimetype = '.MTS'
+mimetype = ['.mp4', '.MP4', '.MTS','mkv']
 
 videos = {}
 
@@ -66,10 +67,17 @@ def video_merger(videos, vertical=False):
             # side-by-side merge the videos vertical with ffmpeg vstack
             subprocess.call(['ffmpeg', '-i', videotop ,'-i', videobottom ,'-filter_complex','vstack=inputs=2', videooutfile, '-y'])
 
+#def main(vertical=False):
+#    for root, dirs, files in os.walk( video_input_directory ):
+#        for file in files:
+#            if file.endswith( mimetype ):
+#                build_video_dict(root, file)
+
 def main(vertical=False):
     for root, dirs, files in os.walk( video_input_directory ):
         for file in files:
-            if file.endswith( mimetype ):
+            name, extension = os.path.splitext(file)
+            if extension in mimetype:
                 build_video_dict(root, file)
 
     video_merger(videos, vertical=vertical)
