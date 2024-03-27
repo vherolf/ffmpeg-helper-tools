@@ -73,8 +73,8 @@ def video_merger(videos, vertical=False):
 #            if file.endswith( mimetype ):
 #                build_video_dict(root, file)
 
-def main(vertical=False):
-    for root, dirs, files in os.walk( video_input_directory ):
+def main(vertical=False, directory = video_input_directory):
+    for root, dirs, files in os.walk( directory ):
         for file in files:
             name, extension = os.path.splitext(file)
             if extension in mimetype:
@@ -86,9 +86,15 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--vertical",default=False, action="store_true")
+    parser.add_argument("-d", "--directory")
     args = parser.parse_args()
 
-    if args.vertical:
-        main(vertical=True)
+    if args.directory:
+        directory = args.directory
     else:
-        main(vertical=False)
+        directory = video_input_directory
+
+    if args.vertical:
+        main(vertical=True, directory = directory)
+    else:
+        main(vertical=False, directory = directory)

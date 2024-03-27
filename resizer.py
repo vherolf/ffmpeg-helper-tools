@@ -30,14 +30,22 @@ def video_resize(root, file):
     
     print('compressing', videoin, 'to', videoout)
     ## search ffmpeg resize 
-    #subprocess.call(['ffmpeg', '-i', videoin, '-crf', '28', '-c:a', 'copy', videoout, '-y' ])
+    subprocess.call(['ffmpeg', '-i', videoin, '-crf', '28', '-c:a', 'copy', videoout, '-y' ])
     
-def main():
-    for root, dirs, files in os.walk( video_input_directory ):
+def main(directory = video_input_directory):
+    for root, dirs, files in os.walk( directory ):
         for file in files:
             name, extension = os.path.splitext(file)
             if extension in mimetype:
                 video_resize(root, file)
     
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--directory")
+    args = parser.parse_args()
+
+    if args.directory:
+        main(directory = args.directory)
+    else:
+        main(directory = video_input_directory)
