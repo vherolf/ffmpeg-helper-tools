@@ -18,6 +18,7 @@ Path(video_output_directory).mkdir(parents=True, exist_ok=True)
 # video container that script searches for
 mimetype = ['.mp4','.MP4','.MTS','mkv']
 
+
 def video_compressor(root, file):
     # make relative directory structure in output location
     relative_dir = root.removeprefix( str(video_input_directory) )
