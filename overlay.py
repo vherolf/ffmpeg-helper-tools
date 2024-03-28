@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# recursive batch resizer with ffmpeg
+# recursive batch compressor with ffmpeg
 
 import os
 from pathlib import Path
@@ -12,13 +12,14 @@ home = str(Path.home())
 video_input_directory = Path.cwd()
 
 # video output directory
-video_output_directory = Path(home,'Desktop', 'resized_videos')
+video_output_directory = Path(home,'Desktop', 'compressed_videos')
 Path(video_output_directory).mkdir(parents=True, exist_ok=True)
 
 # video container that script searches for
 mimetype = ['.mp4','.MP4','.MTS','mkv']
 
-def video_resize(root, file):
+
+def video_compressor(root, file):
     # make relative directory structure in output location
     relative_dir = root.removeprefix( str(video_input_directory) )
 
@@ -28,17 +29,16 @@ def video_resize(root, file):
     videooutdir.mkdir(parents=True, exist_ok=True)
     videoout = Path(videooutdir , videoin.stem +'.mp4')
     
-    print('resize', videoin, 'to', videoout)
-    ## search ffmpeg resize 
-    subprocess.call(['ffmpeg', '-i', videoin, '-vf', 'scale=iw/2:ih/2', '-crf', '28', '-c:a', 'copy', videoout, '-y' ])
+    print('compressing', videoin, 'to', videoout)
+    subprocess.call(['ffmpeg', '-i', videoin, '-crf', '28', '-c:a', 'copy', videoout, '-y' ])
     
-def main(directory = video_input_directory):
-    for root, dirs, files in os.walk( directory ):
+def main(directory=video_input_directory):
+    for root, dirs, files in os.walk( Path(directory) ):
         for file in files:
             name, extension = os.path.splitext(file)
             if extension in mimetype:
-                video_resize(root, file)
-    
+                video_compressor(root, file)
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
