@@ -30,3 +30,15 @@ https://video.stackexchange.com/questions/4563/how-can-i-crop-a-video-with-ffmpe
 ## make animated gif from mp4
 
 ```ffmpeg -i input.pm4 rainbowunicorn.gif```
+
+## dvgrab
+
+extract from old video camcorder over firewire
+
+```
+dvgrab -size=0 -rewind -t mpeg2  -showstatus  -timesys -autosplit=10000
+```
+and to properly convert it to a mp4 use yadif filter  
+```
+ffmpeg -i dv-grabbed-video.dv  out.mp4
+```
