@@ -31,6 +31,10 @@ https://video.stackexchange.com/questions/4563/how-can-i-crop-a-video-with-ffmpe
 
 ```ffmpeg -i input.pm4 rainbowunicorn.gif```
 
+## view rtsp stream full screen with ffplay
+
+```ffplay -rtsp_transport tcp -i rtsp://user:password@192.168.88.248:554/ipcam_mjpeg.sdp -fs```
+
 ## dvgrab
 
 extract from old video camcorder over firewire
