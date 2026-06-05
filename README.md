@@ -12,6 +12,12 @@ Run the same command again at any time to update.
 
 The script checks for system dependencies (`python3`, `pip3`, `ffmpeg`, `ffprobe`, `git`), clones or pulls the repo into `./ffmpeg-helper-tools` (relative to where you run the command), creates a venv, and installs all packages.
 
+### System dependencies
+
+**Ubuntu / Debian:** `sudo apt install -y git python3 python3-pip python3-venv ffmpeg`
+
+**macOS:** `brew install git python3 ffmpeg`
+
 ### Build standalone binaries
 
 After installing, run:
@@ -39,12 +45,6 @@ cd ffmpeg-helper-tools
 python3 -m venv venv
 venv/bin/pip install -r requirements.txt
 ```
-
-### System dependencies
-
-**Ubuntu / Debian:** `sudo apt install -y git python3 python3-pip python3-venv ffmpeg`
-
-**macOS:** `brew install git python3 ffmpeg`
 
 ## Scripts
 
