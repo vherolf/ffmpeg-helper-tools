@@ -27,34 +27,43 @@ python analyzer.py -d /path/to/videos
 
 ### compressor.py
 
-Re-encodes videos to H.264 at CRF 28. Output goes to `~/Desktop/compressed_videos`.
+Re-encodes videos to H.264 at CRF 28.
 
 ```bash
 python compressor.py
-python compressor.py -d /path/to/videos
+python compressor.py -s /path/to/videos -d /path/to/output
+python compressor.py -n                   # dry run — print actions without encoding
 ```
+
+Defaults: source = current directory, destination = `~/Desktop/compressed_videos`.
 
 ---
 
 ### resizer.py
 
-Resizes videos to 720p height while preserving aspect ratio. Output goes to `~/Desktop/resized_videos`.
+Resizes videos to 720p height while preserving aspect ratio.
 
 ```bash
 python resizer.py
-python resizer.py -d /path/to/videos
+python resizer.py -s /path/to/videos -d /path/to/output
+python resizer.py -n                      # dry run — print actions without resizing
 ```
+
+Defaults: source = current directory, destination = `~/Desktop/resized_videos`.
 
 ---
 
 ### renamer.py
 
-Copies videos with spaces in filenames replaced by underscores. Output goes to `~/Desktop/renamed_videos`.
+Copies videos with spaces in filenames replaced by underscores.
 
 ```bash
 python renamer.py
-python renamer.py -d /path/to/videos
+python renamer.py -s /path/to/videos -d /path/to/output
+python renamer.py -n                      # dry run — print actions without copying
 ```
+
+Defaults: source = current directory, destination = `~/Desktop/renamed_videos`.
 
 ---
 
