@@ -12,9 +12,7 @@
 import os
 from pathlib import Path
 import subprocess
-import queue
-
-q = queue.Queue()
+from common import is_video
 
 # define users home directory
 home = str(Path.home())
@@ -25,11 +23,6 @@ video_input_directory = Path.cwd()
 # video output directory
 video_output_directory = os.path.join(home,'Desktop', 'merged_videos')
 Path(video_output_directory).mkdir(parents=True, exist_ok=True)
-
-# video container that script searches for
-#mimetype = '.mp4'
-#mimetype = '.MTS'
-mimetype = ['.mp4', '.MP4', '.MTS','mkv']
 
 videos = {}
 
@@ -91,8 +84,7 @@ def video_merger(videos, vertical=False):
 def main(vertical=False, directory = video_input_directory):
     for root, dirs, files in os.walk( directory ):
         for file in files:
-            name, extension = os.path.splitext(file)
-            if extension in mimetype:
+            if is_video(file):
                 build_video_dict(root, file)
 
     video_merger(videos, vertical=vertical)

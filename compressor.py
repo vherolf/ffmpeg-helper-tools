@@ -4,6 +4,7 @@
 import os
 from pathlib import Path
 import subprocess
+from common import is_video
 
 # define users home directory
 home = str(Path.home())
@@ -14,9 +15,6 @@ video_input_directory = Path.cwd()
 # video output directory
 video_output_directory = Path(home,'Desktop', 'compressed_videos')
 Path(video_output_directory).mkdir(parents=True, exist_ok=True)
-
-# video container that script searches for
-mimetype = ['.mp4','.MP4','.MTS','mkv']
 
 
 def video_compressor(root, file):
@@ -38,8 +36,7 @@ def video_compressor(root, file):
 def main(directory=video_input_directory):
     for root, dirs, files in os.walk( Path(directory) ):
         for file in files:
-            name, extension = os.path.splitext(file)
-            if extension in mimetype:
+            if is_video(file):
                 video_compressor(root, file)
 
 if __name__ == '__main__':

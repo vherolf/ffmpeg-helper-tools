@@ -1,5 +1,133 @@
 # ffmpeg-helper-tools
-simple python scripts for ffmpeg batch tasks  
+
+Python scripts for batch video processing with ffmpeg. Each script walks a directory recursively, detects video files using ffprobe, and writes output to `~/Desktop/<output_folder>` while mirroring the original directory structure.
+
+## Requirements
+
+- Python 3.9+
+- ffmpeg installed and on your PATH
+- Python packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Scripts
+
+### analyzer.py
+
+Prints the path, resolution, codec, and duration for every video found.
+
+```bash
+python analyzer.py
+python analyzer.py -d /path/to/videos
+```
+
+---
+
+### compressor.py
+
+Re-encodes videos to H.264 at CRF 28. Output goes to `~/Desktop/compressed_videos`.
+
+```bash
+python compressor.py
+python compressor.py -d /path/to/videos
+```
+
+---
+
+### resizer.py
+
+Resizes videos to 720p height while preserving aspect ratio. Output goes to `~/Desktop/resized_videos`.
+
+```bash
+python resizer.py
+python resizer.py -d /path/to/videos
+```
+
+---
+
+### renamer.py
+
+Copies videos with spaces in filenames replaced by underscores. Output goes to `~/Desktop/renamed_videos`.
+
+```bash
+python renamer.py
+python renamer.py -d /path/to/videos
+```
+
+---
+
+### mosaic.py
+
+Merges pairs of videos found in the same folder side-by-side (default) or stacked vertically. Output goes to `~/Desktop/merged_videos`.
+
+```bash
+python mosaic.py                  # horizontal (side-by-side)
+python mosaic.py -v               # vertical (stacked)
+python mosaic.py -d /path/to/videos
+```
+
+Each subfolder must contain exactly 2 video files.
+
+---
+
+### mosaic-left-right.py
+
+Like `mosaic.py` but uses `_left` / `_right` in filenames to determine order. The output filename is derived by stripping the `_left` / `_right` suffix.
+
+```bash
+python mosaic-left-right.py
+python mosaic-left-right.py -d /path/to/videos
+```
+
+---
+
+### videoslicer-horizontal.py
+
+Splits a wide video into 3 equal horizontal scenes using ffmpeg's crop filter.
+A video at 5760x1080 produces three 1920x1080 clips.
+
+```bash
+python videoslicer-horizontal.py
+```
+
+Filenames must follow the format `YYYY-MM-DD HH-MM-SS.ext` (e.g. `2022-05-24 15-46-07.mkv`).
+Output goes to `~/Desktop/sliced_videos/<date>/<time>/`.
+
+---
+
+### videoslicer-vertical.py
+
+Splits a video into 2 equal vertical scenes using ffmpeg's crop filter.
+A video at 1920x1080 produces two 960x540 clips.
+
+```bash
+python videoslicer-vertical.py
+```
+
+Same filename format requirement as `videoslicer-horizontal.py`.
+
+---
+
+### generate-test-media.py
+
+Generates numbered test images (using Pillow) and converts them to videos — useful for testing the other scripts.
+
+```bash
+python generate-test-media.py            # generate images + videos
+python generate-test-media.py -l         # list available fonts
+```
+
+Output is written to `videos/`, `images/`, and `videos_merge/` in the current directory.
+
+---
+
+## common.py
+
+Shared helper used by all scripts. `is_video(filename)` runs ffprobe on the file and returns `True` if it contains a video stream — format-agnostic, works on any container.
+
+---
 
 # FFMPEG Cheatsheet
 

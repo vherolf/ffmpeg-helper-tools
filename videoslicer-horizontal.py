@@ -11,6 +11,7 @@
 import os
 from pathlib import Path
 import subprocess
+from common import is_video
 
 # define users home directory
 home = str(Path.home())
@@ -21,10 +22,6 @@ video_input_directory = Path.cwd()
 # video output directory
 video_output = os.path.join(home,'Desktop', 'sliced_videos')
 Path(video_output).mkdir(parents=True, exist_ok=True)
-
-# video container that script searches for
-#mimetype = '.mkv'
-mimetype = ['.mp4','.MP4','.MTS','mkv']
 
 # nameing of the file should be "date" + space + "time"
 # eg:   2022-05-24 15-46-07.mkv  
@@ -48,7 +45,7 @@ def video_slicer(root, file):
 def main():
     for root, dirs, files in os.walk( video_input_directory ):
         for file in files:
-            if file.endswith( mimetype ):
+            if is_video(file):
                 video_slicer(root,file)
 
 #def main():
