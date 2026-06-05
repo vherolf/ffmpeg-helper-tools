@@ -10,7 +10,7 @@ curl -sSL https://raw.githubusercontent.com/vherolf/ffmpeg-helper-tools/main/ins
 
 Run the same command again at any time to update.
 
-The script checks for system dependencies (`python3`, `pip3`, `ffmpeg`, `ffprobe`, `git`), clones or pulls the repo to `~/.local/share/ffmpeg-helper-tools`, creates a venv, and installs all packages.
+The script checks for system dependencies (`python3`, `pip3`, `ffmpeg`, `ffprobe`, `git`), clones or pulls the repo into `./ffmpeg-helper-tools` (relative to where you run the command), creates a venv, and installs all packages.
 
 ### Manual install
 

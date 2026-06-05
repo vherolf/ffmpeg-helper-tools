@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/vherolf/ffmpeg-helper-tools.git"
-INSTALL_DIR="${HOME}/.local/share/ffmpeg-helper-tools"
+INSTALL_DIR="$(pwd)/ffmpeg-helper-tools"
 
 # ── colours ──────────────────────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
