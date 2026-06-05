@@ -27,15 +27,16 @@ python analyzer.py -d /path/to/videos
 
 ### compressor.py
 
-Re-encodes videos to H.264 at CRF 28.
+Re-encodes videos to H.265 (libx265) at CRF 28.
 
 ```bash
 python compressor.py
 python compressor.py -s /path/to/videos -d /path/to/output
-python compressor.py -n                   # dry run — print actions without encoding
+python compressor.py -c 23               # lower CRF = higher quality (range 0–51)
+python compressor.py -n                  # dry run — print actions without encoding
 ```
 
-Defaults: source = current directory, destination = `~/Desktop/compressed_videos`.
+Defaults: source = current directory, destination = `~/Desktop/compressed_videos`, CRF = 28.
 
 ---
 
@@ -46,10 +47,11 @@ Resizes videos to 720p height while preserving aspect ratio.
 ```bash
 python resizer.py
 python resizer.py -s /path/to/videos -d /path/to/output
-python resizer.py -n                      # dry run — print actions without resizing
+python resizer.py -r 1080                # resize to 1080p instead
+python resizer.py -n                     # dry run — print actions without resizing
 ```
 
-Defaults: source = current directory, destination = `~/Desktop/resized_videos`.
+Defaults: source = current directory, destination = `~/Desktop/resized_videos`, resolution = 720.
 
 ---
 
