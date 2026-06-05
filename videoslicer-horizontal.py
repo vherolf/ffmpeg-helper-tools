@@ -13,47 +13,39 @@ from pathlib import Path
 import subprocess
 from common import is_video
 
-# define users home directory
 home = str(Path.home())
 
-# video input files (current directory)
 video_input_directory = Path.cwd()
+video_output_directory = Path(home, 'Desktop', 'sliced_videos')
 
-# video output directory
-video_output = os.path.join(home,'Desktop', 'sliced_videos')
-Path(video_output).mkdir(parents=True, exist_ok=True)
+# filename format: "YYYY-MM-DD HH-MM-SS.ext"  e.g. 2022-05-24 15-46-07.mkv
+def video_slicer(root, file, destination):
+    videoin = os.path.join(root, file)
 
-# nameing of the file should be "date" + space + "time"
-# eg:   2022-05-24 15-46-07.mkv  
-def video_slicer(root, file):
-    videoin =  os.path.join(root, file)
-    
-    # create folders depending on date and time in filename
     video_day, video_time = Path(file).stem.split(' ')
-    print(video_day, video_time)
-    Path(video_output, video_day, video_time).mkdir(parents=True, exist_ok=True)
-    
-    videoout1 =  os.path.join(video_output, video_day, video_time, video_day+'_'+video_time+'_scene1'+'.mkv')
-    videoout2 =  os.path.join(video_output, video_day, video_time, video_day+'_'+video_time+'_scene2'+'.mkv')
-    videoout3 =  os.path.join(video_output, video_day, video_time, video_day+'_'+video_time+'_scene3'+'.mkv')
+    outdir = Path(destination, video_day, video_time)
+    outdir.mkdir(parents=True, exist_ok=True)
 
-    # slice the videos with ffmpeg
-    subprocess.call(['ffmpeg', '-i', videoin, '-filter:v', 'crop=iw/3:ih:0:0',    '-c:a', 'copy', videoout1, '-y' ])
-    subprocess.call(['ffmpeg', '-i', videoin, '-filter:v', 'crop=iw/3:ih:iw/3:0', '-c:a', 'copy', videoout2, '-y'])
-    subprocess.call(['ffmpeg', '-i', videoin, '-filter:v', 'crop=iw/3:ih:(iw/3)*2:0', '-c:a', 'copy' ,videoout3, '-y' ])
+    videoout1 = outdir / f'{video_day}_{video_time}_scene1.mkv'
+    videoout2 = outdir / f'{video_day}_{video_time}_scene2.mkv'
+    videoout3 = outdir / f'{video_day}_{video_time}_scene3.mkv'
 
-def main():
-    for root, dirs, files in os.walk( video_input_directory ):
+    print(videoin, '->', outdir)
+    subprocess.call(['ffmpeg', '-i', videoin, '-filter:v', 'crop=iw/3:ih:0:0',       '-c:a', 'copy', videoout1, '-y'])
+    subprocess.call(['ffmpeg', '-i', videoin, '-filter:v', 'crop=iw/3:ih:iw/3:0',    '-c:a', 'copy', videoout2, '-y'])
+    subprocess.call(['ffmpeg', '-i', videoin, '-filter:v', 'crop=iw/3:ih:(iw/3)*2:0','-c:a', 'copy', videoout3, '-y'])
+
+def main(source=video_input_directory, destination=video_output_directory):
+    Path(destination).mkdir(parents=True, exist_ok=True)
+    for root, dirs, files in os.walk(source):
         for file in files:
             if is_video(file):
-                video_slicer(root,file)
-
-#def main():
-#    for root, dirs, files in os.walk( video_input_directory ):
-#        for file in files:
-#            name, extension = os.path.splitext(file)
-#            if extension in mimetype:
-#                video_slicer(root,file)
+                video_slicer(root, file, destination)
 
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--source', default=video_input_directory)
+    parser.add_argument('-d', '--destination', default=video_output_directory)
+    args = parser.parse_args()
+    main(source=args.source, destination=args.destination)

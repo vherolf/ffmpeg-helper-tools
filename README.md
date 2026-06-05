@@ -99,10 +99,11 @@ A video at 5760x1080 produces three 1920x1080 clips.
 
 ```bash
 python videoslicer-horizontal.py
+python videoslicer-horizontal.py -s /path/to/videos -d /path/to/output
 ```
 
 Filenames must follow the format `YYYY-MM-DD HH-MM-SS.ext` (e.g. `2022-05-24 15-46-07.mkv`).
-Output goes to `~/Desktop/sliced_videos/<date>/<time>/`.
+Output is written to `<destination>/<date>/<time>/`. Defaults: source = current directory, destination = `~/Desktop/sliced_videos`.
 
 ---
 
