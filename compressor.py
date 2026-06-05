@@ -4,7 +4,9 @@
 import os
 from pathlib import Path
 import subprocess
-from common import is_video
+from common import is_video, get_logger
+
+logger = get_logger(__name__)
 
 home = str(Path.home())
 
@@ -17,7 +19,7 @@ def video_compressor(root, file, source, destination, crf=28, dry_run=False):
     videoin = Path(root, file)
     videooutdir = Path(destination, relative_dir.lstrip('/'))
     videoout = Path(videooutdir, videoin.stem + '.mp4')
-    print('compressing', videoin, 'to', videoout, f'(h.265 crf={crf})')
+    logger.info('compressing %s -> %s (h.265 crf=%d)', videoin, videoout, crf)
     if dry_run:
         return
     videooutdir.mkdir(parents=True, exist_ok=True)

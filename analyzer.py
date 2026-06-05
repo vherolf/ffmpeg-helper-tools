@@ -1,9 +1,10 @@
 from pathlib import Path
 import ffmpeg
 import os
-from common import is_video
+from common import is_video, get_logger
 
-# video input files (current directory)
+logger = get_logger(__name__)
+
 video_input_directory = Path.cwd()
 
 def main(directory = video_input_directory):
@@ -12,7 +13,7 @@ def main(directory = video_input_directory):
             if is_video(file):
                 video = Path(root, file)
                 v = ffmpeg.probe(video)["streams"][0]
-                print(video, v['width'], v['height'], v['codec_name'], v['duration'])
+                logger.info('%s  %sx%s  %s  %ss', video, v['width'], v['height'], v['codec_name'], v['duration'])
 
 
 if __name__ == '__main__':

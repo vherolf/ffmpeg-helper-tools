@@ -14,9 +14,11 @@
 import os
 from pathlib import Path
 import subprocess
-from common import is_video
+from common import is_video, get_logger
 
 # define users home directory
+logger = get_logger(__name__)
+
 home = str(Path.home())
 
 # video input files (current directory)
@@ -38,7 +40,7 @@ def video_slicer(root, file, destination, crf=28):
     videoout1 = outdir / f'{video_day}_{video_time}_scene1.mkv'
     videoout2 = outdir / f'{video_day}_{video_time}_scene2.mkv'
 
-    print(videoin, '->', outdir)
+    logger.info('%s -> %s', videoin, outdir)
     subprocess.call(['ffmpeg', '-i', videoin, '-filter:v', 'crop=iw:ih/2:0:0',    '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), '-c:a', 'copy', videoout1, '-y'])
     subprocess.call(['ffmpeg', '-i', videoin, '-filter:v', 'crop=iw:ih/2:0:ih/2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), '-c:a', 'copy', videoout2, '-y'])
 

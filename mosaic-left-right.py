@@ -12,9 +12,11 @@
 import os
 from pathlib import Path
 import subprocess
-from common import is_video
+from common import is_video, get_logger
 
 # define users home directory
+logger = get_logger(__name__)
+
 home = str(Path.home())
 
 # video input files (current directory)
@@ -54,16 +56,13 @@ def video_merger(videos, vertical=False, crf=28):
             videooutfile = Path(videooutdir, video[0].rstrip('_') +'.mp4')
             videoleft = Path(root, files[1])
             videoright = Path(root, files[0])
-            print(videoright)
-            print()
         else:
             video = files[0].split('left')
-            #print("left", files[0], videoleft)
             videooutfile = Path(videooutdir, video[0].rstrip('_') + '.mp4')
             videoleft = Path(root, files[0])
             videoright = Path(root, files[1])
-            print(videoright)
-            print()
+
+        logger.info('merging %s + %s -> %s', videoleft.name, videoright.name, videooutfile)
 
         if vertical == False:
             subprocess.call(['ffmpeg', '-i', videoleft, '-i', videoright, '-filter_complex', 'hstack=inputs=2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), videooutfile, '-y'])

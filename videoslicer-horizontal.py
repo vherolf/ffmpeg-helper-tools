@@ -11,7 +11,9 @@
 import os
 from pathlib import Path
 import subprocess
-from common import is_video
+from common import is_video, get_logger
+
+logger = get_logger(__name__)
 
 home = str(Path.home())
 
@@ -30,7 +32,7 @@ def video_slicer(root, file, destination, crf=28):
     videoout2 = outdir / f'{video_day}_{video_time}_scene2.mkv'
     videoout3 = outdir / f'{video_day}_{video_time}_scene3.mkv'
 
-    print(videoin, '->', outdir)
+    logger.info('%s -> %s', videoin, outdir)
     filter_complex = (
         '[0]split=3[a][b][c];'
         '[a]crop=iw/3:ih:0:0[s1];'

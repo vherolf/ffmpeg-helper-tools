@@ -12,9 +12,11 @@
 import os
 from pathlib import Path
 import subprocess
-from common import is_video
+from common import is_video, get_logger
 
 # define users home directory
+logger = get_logger(__name__)
+
 home = str(Path.home())
 
 # video input files (current directory)
@@ -35,8 +37,6 @@ def build_video_dict(root, file):
 def video_merger(videos, source, destination, vertical=False, crf=28):
 
     for root,files in videos.items():
-        print(root, files)
-
         relative_dir = root.removeprefix(str(source))
         videotop = Path(root, files[0])
         videobottom = Path(root, files[1])
@@ -45,7 +45,7 @@ def video_merger(videos, source, destination, vertical=False, crf=28):
         videooutdir.mkdir(parents=True, exist_ok=True)
         videooutfile = Path(videooutdir, 'out.mp4')
 
-        print(videooutfile, videobottom, videotop)
+        logger.info('merging %s + %s -> %s', videotop.name, videobottom.name, videooutfile)
 
         if vertical == False:
             subprocess.call(['ffmpeg', '-i', videotop, '-i', videobottom, '-filter_complex', 'hstack=inputs=2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), videooutfile, '-y'])

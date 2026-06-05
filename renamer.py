@@ -4,7 +4,9 @@
 import os
 from pathlib import Path
 import shutil
-from common import is_video
+from common import is_video, get_logger
+
+logger = get_logger(__name__)
 
 home = str(Path.home())
 
@@ -17,7 +19,7 @@ def video_rename(root, file, source, destination, dry_run=False):
     videoin = Path(root, file)
     videooutdir = Path(destination, relative_dir.lstrip('/'))
     videoout = Path(videooutdir, videoin.stem.replace(' ', '_') + '.mp4')
-    print('rename', videoin, 'to', videoout)
+    logger.info('rename %s -> %s', videoin, videoout)
     if dry_run:
         return
     videooutdir.mkdir(parents=True, exist_ok=True)

@@ -4,6 +4,9 @@ from PIL import Image, ImageDraw, ImageFont
 from pathlib import Path
 import subprocess
 import shutil
+from common import get_logger
+
+logger = get_logger(__name__)
 
 video_dir = Path(Path.cwd(), 'videos')
 video_dir.mkdir(parents=True, exist_ok=True)
@@ -21,11 +24,14 @@ def generate_test_image(text=u'1', width=1280, height=720, fontsize=700, fontcol
     draw = ImageDraw.Draw(canvas)
     # use anchor="mm" for center in middle (THANK YOU STACK OVERFLOW)
     draw.text((width/2, height/2), text, fontcolor, font, anchor="mm")
-    canvas.save( Path(image_dir, f'{backgroundcolor}'+ text +".png"), "PNG")
+    out = Path(image_dir, f'{backgroundcolor}'+ text +".png")
+    canvas.save(out, "PNG")
+    logger.info('generated image %s', out)
     #canvas.show()
 
 def generate_video_from_one_image(image=None, width=1280, height=720, duration=30, crf=28, video_dir=video_dir):
     outputname = Path(video_dir, Path(image).stem + '.mp4')
+    logger.info('generating video %s', outputname)
     subprocess.call([FFMPEG,
                      '-loop', '1',
                      '-i', image,

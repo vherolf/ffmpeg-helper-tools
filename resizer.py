@@ -4,7 +4,9 @@
 import os
 from pathlib import Path
 import subprocess
-from common import is_video
+from common import is_video, get_logger
+
+logger = get_logger(__name__)
 
 home = str(Path.home())
 
@@ -17,7 +19,7 @@ def video_resize(root, file, source, destination, resolution=720, crf=28, dry_ru
     videoin = Path(root, file)
     videooutdir = Path(destination, relative_dir.lstrip('/').replace(' ', '_'))
     videoout = Path(videooutdir, videoin.stem.replace(' ', '_') + '.mp4')
-    print('resize', videoin, 'to', videoout, f'({resolution}p crf={crf})')
+    logger.info('resize %s -> %s (%dp crf=%d)', videoin, videoout, resolution, crf)
     if dry_run:
         return
     videooutdir.mkdir(parents=True, exist_ok=True)
