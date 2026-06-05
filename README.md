@@ -1,6 +1,6 @@
 # ffmpeg-helper-tools
 
-Python scripts for batch video processing with ffmpeg. Each script walks a directory recursively, detects video files using ffprobe, and writes output to `~/Desktop/<output_folder>` while mirroring the original directory structure.
+Python scripts for batch video processing with ffmpeg. Each script walks a directory recursively, detects video files using ffprobe.
 
 ## Install
 
