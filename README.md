@@ -2,15 +2,32 @@
 
 Python scripts for batch video processing with ffmpeg. Each script walks a directory recursively, detects video files using ffprobe, and writes output to `~/Desktop/<output_folder>` while mirroring the original directory structure.
 
-## Requirements
-
-- Python 3.9+
-- ffmpeg installed and on your PATH
-- Python packages:
+## Install
 
 ```bash
-pip install -r requirements.txt
+curl -sSL https://raw.githubusercontent.com/vherolf/ffmpeg-helper-tools/main/install.sh | bash
 ```
+
+Run the same command again at any time to update.
+
+The script checks for system dependencies (`python3`, `pip3`, `ffmpeg`, `ffprobe`, `git`), clones or pulls the repo to `~/.local/share/ffmpeg-helper-tools`, creates a venv, and installs all packages.
+
+### Manual install
+
+```bash
+git clone https://github.com/vherolf/ffmpeg-helper-tools.git
+cd ffmpeg-helper-tools
+python3 -m venv venv
+venv/bin/pip install -r requirements.txt
+```
+
+### System dependencies
+
+| Dependency | Ubuntu/Debian | macOS |
+|---|---|---|
+| Python 3 | `sudo apt install python3 python3-pip` | `brew install python3` |
+| ffmpeg + ffprobe | `sudo apt install ffmpeg` | `brew install ffmpeg` |
+| git | `sudo apt install git` | `brew install git` |
 
 ## Scripts
 

@@ -21,7 +21,7 @@ def video_compressor(root, file, source, destination, crf=28, dry_run=False):
     if dry_run:
         return
     videooutdir.mkdir(parents=True, exist_ok=True)
-    subprocess.call(['ffmpeg', '-i', videoin, '-vcodec', 'libx265', '-crf', str(crf), '-c:a', 'copy', videoout, '-y'])
+    subprocess.call(['ffmpeg', '-i', videoin, '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), '-c:a', 'copy', videoout, '-y'])
 
 def main(source=video_input_directory, destination=video_output_directory, crf=28, dry_run=False):
     if not dry_run:

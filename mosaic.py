@@ -33,20 +33,15 @@ def build_video_dict(root, file):
     else:
         videos[root] = [file]
 
-def video_merger(videos, vertical=False):
+def video_merger(videos, vertical=False, crf=28):
 
     for root,files in videos.items():
-        #check if only 2 videos in folder
         print(root, files)
-
-        #videooutdir =  Path(video_output_directory, relative_dir.lstrip('/') )
-        #videooutdir.mkdir(parents=True, exist_ok=True)
-        #videoout = Path(videooutdir , videoin.stem +'.mp4')
 
         relative_dir = root.removeprefix( str(video_input_directory) )
         videotop = Path(root, files[0])
         videobottom = Path(root, files[1])
-        
+
         videooutdir = Path(video_output_directory, relative_dir.lstrip('/'))
         videooutdir.mkdir(parents=True, exist_ok=True)
         videooutfile = Path(videooutdir, 'out.mp4' )
@@ -54,11 +49,9 @@ def video_merger(videos, vertical=False):
         print( videooutfile, videobottom, videotop)
 
         if vertical == False:
-            # side-by-side merge the videos horizontal with ffmpeg hstack
-            subprocess.call(['ffmpeg', '-i', videotop ,'-i', videobottom ,'-filter_complex','hstack=inputs=2', videooutfile, '-y'])
+            subprocess.call(['ffmpeg', '-i', videotop, '-i', videobottom, '-filter_complex', 'hstack=inputs=2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), videooutfile, '-y'])
         elif vertical == True:
-            # side-by-side merge the videos vertical with ffmpeg vstack
-            subprocess.call(['ffmpeg', '-i', videotop ,'-i', videobottom ,'-filter_complex','vstack=inputs=2', videooutfile, '-y'])
+            subprocess.call(['ffmpeg', '-i', videotop, '-i', videobottom, '-filter_complex', 'vstack=inputs=2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), videooutfile, '-y'])
 
 #def main(vertical=False):
 #    for root, dirs, files in os.walk( video_input_directory ):
@@ -66,27 +59,19 @@ def video_merger(videos, vertical=False):
 #            if file.endswith( mimetype ):
 #                build_video_dict(root, file)
 
-def main(vertical=False, directory = video_input_directory):
+def main(vertical=False, directory=video_input_directory, crf=28):
     for root, dirs, files in os.walk( directory ):
         for file in files:
             if is_video(file):
                 build_video_dict(root, file)
 
-    video_merger(videos, vertical=vertical)
+    video_merger(videos, vertical=vertical, crf=crf)
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--vertical",default=False, action="store_true")
+    parser.add_argument("-v", "--vertical", default=False, action="store_true")
     parser.add_argument("-d", "--directory")
+    parser.add_argument("-c", "--crf", type=int, default=28)
     args = parser.parse_args()
-
-    if args.directory:
-        directory = args.directory
-    else:
-        directory = video_input_directory
-
-    if args.vertical:
-        main(vertical=True, directory = directory)
-    else:
-        main(vertical=False, directory = directory)
+    main(vertical=args.vertical, directory=args.directory or video_input_directory, crf=args.crf)

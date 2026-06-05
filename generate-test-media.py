@@ -24,16 +24,18 @@ def generate_test_image(text=u'1', width=1280, height=720, fontsize=700, fontcol
     canvas.save( Path(image_dir, f'{backgroundcolor}'+ text +".png"), "PNG")
     #canvas.show()
 
-def generate_video_from_one_image(image=None, width=1280, height=720, duration=30, video_dir=video_dir):
+def generate_video_from_one_image(image=None, width=1280, height=720, duration=30, crf=28, video_dir=video_dir):
     outputname = Path(video_dir, Path(image).stem + '.mp4')
-    subprocess.call([FFMPEG, 
-                     '-loop', '1', 
-                     '-i', image, 
-                     '-c:v', 'libx264', 
-                     '-t', f'{duration}', 
-                     '-pix_fmt', 'yuv420p', 
+    subprocess.call([FFMPEG,
+                     '-loop', '1',
+                     '-i', image,
+                     '-c:v', 'libx265',
+                     '-preset', 'slow',
+                     '-crf', str(crf),
+                     '-t', f'{duration}',
+                     '-pix_fmt', 'yuv420p',
                      '-vf', f"scale={width}:{height}",
-                     outputname, '-y' ])
+                     outputname, '-y'])
 
 def list_font_families():
     from tkinter import Tk, font
@@ -43,8 +45,9 @@ def list_font_families():
 if __name__=='__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--list-fonts-available",default=False, action="store_true")
+    parser.add_argument("-l", "--list-fonts-available", default=False, action="store_true")
     parser.add_argument("-g", "--generate-media", default=True, action="store_true")
+    parser.add_argument("-c", "--crf", type=int, default=28)
     args = parser.parse_args()
 
     # list fonts available and exit
@@ -61,7 +64,7 @@ if __name__=='__main__':
             generate_test_image( f'{text}', fontcolor='white', backgroundcolor='green' )
             
         for image in image_dir.glob('*.png'):
-            generate_video_from_one_image(image)
+            generate_video_from_one_image(image, crf=args.crf)
 
         for i in range(7):
             dir = Path(video_dir_merge, str(i)) 
