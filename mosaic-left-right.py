@@ -79,7 +79,7 @@ def video_merger(videos, vertical=False, crf=28):
 def main(vertical=False, directory=video_input_directory, crf=28):
     for root, dirs, files in os.walk( directory ):
         for file in files:
-            if is_video(file):
+            if is_video(Path(root, file)):
                 build_video_dict(root, file)
 
     video_merger(videos, vertical=vertical, crf=crf)

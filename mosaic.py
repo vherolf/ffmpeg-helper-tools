@@ -62,7 +62,7 @@ def main(source=video_input_directory, destination=video_input_directory, vertic
     Path(destination).mkdir(parents=True, exist_ok=True)
     for root, dirs, files in os.walk(source):
         for file in files:
-            if is_video(file):
+            if is_video(Path(root, file)):
                 build_video_dict(root, file)
 
     video_merger(videos, source=source, destination=destination, vertical=vertical, crf=crf)

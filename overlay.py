@@ -33,7 +33,7 @@ def video_compressor(root, file):
 def main(directory=video_input_directory):
     for root, dirs, files in os.walk( Path(directory) ):
         for file in files:
-            if is_video(file):
+            if is_video(Path(root, file)):
                 video_compressor(root, file)
 
 if __name__ == '__main__':

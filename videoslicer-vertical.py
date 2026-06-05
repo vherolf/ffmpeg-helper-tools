@@ -48,7 +48,7 @@ def main(source=video_input_directory, destination=video_output, crf=28):
     Path(destination).mkdir(parents=True, exist_ok=True)
     for root, dirs, files in os.walk(source):
         for file in files:
-            if is_video(file):
+            if is_video(Path(root, file)):
                 video_slicer(root, file, destination, crf)
 
 if __name__ == '__main__':

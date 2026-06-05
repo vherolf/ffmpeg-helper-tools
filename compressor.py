@@ -30,7 +30,7 @@ def main(source=video_input_directory, destination=video_output_directory, crf=2
         Path(destination).mkdir(parents=True, exist_ok=True)
     for root, dirs, files in os.walk(Path(source)):
         for file in files:
-            if is_video(file):
+            if is_video(Path(root, file)):
                 video_compressor(root, file, source, destination, crf, dry_run)
 
 if __name__ == '__main__':

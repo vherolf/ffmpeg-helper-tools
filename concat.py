@@ -9,7 +9,7 @@ video_input_directory = Path.cwd()
 def main(directory = video_input_directory):
     for root, dirs, files in os.walk( directory ):
         for file in files:
-            if is_video(file):
+            if is_video(Path(root, file)):
                 video = Path(root, file)
                 v = ffmpeg.probe(video)["streams"][0]
                 print(video, v['width'], v['height'], v['codec_name'], v['duration'])
