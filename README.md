@@ -2,7 +2,7 @@
 
 Python scripts for batch video processing with ffmpeg. Each script walks a directory recursively, detects video files using ffprobe.
 
-## Install
+## Quick Install
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/vherolf/ffmpeg-helper-tools/main/install.sh | bash
@@ -42,15 +42,9 @@ venv/bin/pip install -r requirements.txt
 
 ### System dependencies
 
-**Ubuntu / Debian**
-```bash
-sudo apt install -y git python3 python3-pip python3-venv ffmpeg
-```
+**Ubuntu / Debian:** `sudo apt install -y git python3 python3-pip python3-venv ffmpeg`
 
-**macOS**
-```bash
-brew install git python3 ffmpeg
-```
+**macOS:** `brew install git python3 ffmpeg`
 
 ## Scripts
 
