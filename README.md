@@ -12,6 +12,25 @@ Run the same command again at any time to update.
 
 The script checks for system dependencies (`python3`, `pip3`, `ffmpeg`, `ffprobe`, `git`), clones or pulls the repo into `./ffmpeg-helper-tools` (relative to where you run the command), creates a venv, and installs all packages.
 
+### Build standalone binaries
+
+After installing, run:
+
+```bash
+./build.sh
+```
+
+This uses PyInstaller to compile each script into a self-contained binary in `dist/`. The binaries have no Python dependency — copy them anywhere and run directly:
+
+```bash
+./dist/compressor -s /videos -d /output
+./dist/resizer -r 1080 -n
+```
+
+`ffmpeg` and `ffprobe` still need to be installed on the system.
+
+---
+
 ### Manual install
 
 ```bash
