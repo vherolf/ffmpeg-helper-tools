@@ -111,7 +111,7 @@ Defaults: source = current directory, destination = `~/Desktop/renamed_videos`.
 
 ### mosaic.py
 
-Merges pairs of videos found in the same folder side-by-side (default) or stacked vertically. Output goes to `~/Desktop/merged_videos`.
+Merges pairs of videos found in the same folder side-by-side (default) or stacked vertically. Output goes to the current directory by default.
 
 ```bash
 python mosaic.py                  # horizontal (side-by-side)
