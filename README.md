@@ -23,11 +23,15 @@ venv/bin/pip install -r requirements.txt
 
 ### System dependencies
 
-| Dependency | Ubuntu/Debian | macOS |
-|---|---|---|
-| Python 3 | `sudo apt install python3 python3-pip` | `brew install python3` |
-| ffmpeg + ffprobe | `sudo apt install ffmpeg` | `brew install ffmpeg` |
-| git | `sudo apt install git` | `brew install git` |
+**Ubuntu / Debian**
+```bash
+sudo apt install -y git python3 python3-pip python3-venv ffmpeg
+```
+
+**macOS**
+```bash
+brew install git python3 ffmpeg
+```
 
 ## Scripts
 

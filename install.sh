@@ -22,7 +22,7 @@ check_cmd() {
 }
 
 check_cmd git    "sudo apt install git  /  brew install git"
-check_cmd python3 "sudo apt install python3  /  brew install python3"
+check_cmd python3 "sudo apt install python3 python3-venv  /  brew install python3"
 check_cmd pip3    "sudo apt install python3-pip  /  brew install python3"
 check_cmd ffmpeg  "sudo apt install ffmpeg  /  brew install ffmpeg"
 check_cmd ffprobe "ffprobe is part of ffmpeg — reinstall ffmpeg"
