@@ -27,11 +27,13 @@ cd "$SCRIPT_DIR"
 for script in "${SCRIPTS[@]}"; do
     name="${script%.py}"
     echo "Building $name ..."
+    PYTHONWARNINGS=ignore::SyntaxWarning \
     "$PYINSTALLER" --onefile --name "$name" "$script" \
         --distpath "$SCRIPT_DIR/dist" \
         --workpath "$SCRIPT_DIR/build" \
         --specpath "$SCRIPT_DIR/build" \
-        --noconfirm --clean -q
+        --exclude-module tkinter \
+        --noconfirm --clean --log-level WARN
     echo "  -> dist/$name"
 done
 
