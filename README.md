@@ -10,7 +10,7 @@ curl -sSL https://raw.githubusercontent.com/vherolf/ffmpeg-helper-tools/main/ins
 
 Run the same command again at any time to update.
 
-The script checks for system dependencies (`python3`, `pip3`, `ffmpeg`, `ffprobe`, `git`), clones or pulls the repo into `./ffmpeg-helper-tools` (relative to where you run the command), creates a venv, and installs all packages.
+The script checks for system dependencies (`python3`, `pip3`, `ffmpeg`, `ffprobe`, `git`, and — non-blocking — `libmagic`), clones or pulls the repo into `./ffmpeg-helper-tools` (relative to where you run the command), creates a venv, and installs all packages.
 
 ### System dependencies
 
@@ -57,6 +57,7 @@ Prints the path, resolution, codec, and duration for every video found.
 ```bash
 python analyzer.py
 python analyzer.py -d /path/to/videos
+python analyzer.py -l                    # also log to ./analyzer.log
 ```
 
 ---
@@ -96,12 +97,13 @@ Defaults: source = current directory, destination = `~/Desktop/resized_videos`, 
 
 ### renamer.py
 
-Copies videos with spaces in filenames replaced by underscores.
+Copies videos with spaces in filenames replaced by underscores. The original file extension/container is preserved (this is a plain copy, not a transcode).
 
 ```bash
 python renamer.py
 python renamer.py -s /path/to/videos -d /path/to/output
 python renamer.py -n                      # dry run — print actions without copying
+python renamer.py -l                      # also log to <destination>/renamer.log
 ```
 
 Defaults: source = current directory, destination = `~/Desktop/renamed_videos`.
@@ -118,6 +120,8 @@ python mosaic.py -v               # vertical (stacked)
 python mosaic.py -s /path/to/videos
 python mosaic.py -s /path/to/videos -d /path/to/output
 python mosaic.py -c 23            # lower CRF = higher quality (range 0–51)
+python mosaic.py -n               # dry run — print actions without merging
+python mosaic.py -l               # also log to <destination>/mosaic.log
 ```
 
 Each subfolder must contain exactly 2 video files (others are skipped with a warning).
@@ -133,9 +137,11 @@ python mosaic-left-right.py
 python mosaic-left-right.py -d /path/to/videos
 python mosaic-left-right.py -v          # vertical (stacked)
 python mosaic-left-right.py -c 23       # lower CRF = higher quality (range 0–51)
+python mosaic-left-right.py -n          # dry run — print actions without merging
+python mosaic-left-right.py -l          # also log to <output>/mosaic-left-right.log
 ```
 
-Output always goes to `~/Desktop/merged_videos` (no destination override). Each subfolder must contain exactly 2 video files (others are skipped with a warning).
+Output always goes to `~/Desktop/merged_videos` (no destination override). Each subfolder must contain exactly 2 video files, and their filenames must end in `_left`/`_right` (others are skipped with a warning).
 
 ---
 
@@ -148,6 +154,8 @@ A video at 5760x1080 produces three 1920x1080 clips.
 python videoslicer-horizontal.py
 python videoslicer-horizontal.py -s /path/to/videos -d /path/to/output
 python videoslicer-horizontal.py -c 23   # lower CRF = higher quality (range 0–51)
+python videoslicer-horizontal.py -n      # dry run — print actions without slicing
+python videoslicer-horizontal.py -l      # also log to <destination>/videoslicer-horizontal.log
 ```
 
 Filenames must follow the format `YYYY-MM-DD HH-MM-SS.ext` (e.g. `2022-05-24 15-46-07.mkv`) — files that don't match are skipped with an error.
@@ -164,6 +172,8 @@ A video at 1920x1080 produces two 960x540 clips.
 python videoslicer-vertical.py
 python videoslicer-vertical.py -s /path/to/videos -d /path/to/output
 python videoslicer-vertical.py -c 23     # lower CRF = higher quality (range 0–51)
+python videoslicer-vertical.py -n        # dry run — print actions without slicing
+python videoslicer-vertical.py -l        # also log to <destination>/videoslicer-vertical.log
 ```
 
 Same filename format requirement as `videoslicer-horizontal.py` (non-matching files are skipped with an error). Defaults: source = current directory, destination = `~/Desktop/sliced_videos`, CRF = 28.
@@ -195,9 +205,11 @@ python archiver.py -s /path/to/project -d /path/to/archive -n     # dry run — 
 python archiver.py -s /path/to/project -d /path/to/archive -l     # also log to <destination>/<project>/archiver.log
 ```
 
-`-s/--source_directory` and `-d/--destination_directory` are required — this script can move a lot of data, so the paths are never defaulted. Default CRF = 28.
+`-s/--source_directory` and `-d/--destination_directory` are required — this script can move a lot of data, so the paths are never defaulted. Default CRF = 28. Videos are always re-encoded (never just remuxed), even if already H.265 — codec alone doesn't guarantee the source is already small.
 
 Video detection here is two-layered: a fast `libmagic` MIME check first, falling back to the same ffprobe-based check the rest of the suite uses (`common.is_video`) for formats libmagic misidentifies (AVCHD `.mts`/`.m2ts`, MPEG-TS, VOB, etc.). Needs `libmagic1`/`libmagic` installed — see System dependencies above.
+
+After each video is compressed, its output duration is compared against the source (via ffprobe) — a mismatch beyond a small tolerance is treated as a failed/truncated encode and reported as an error rather than a false "done". Compressed videos also keep the source file's original timestamp (`shutil.copystat`), so the archived copy still reflects when it was actually recorded, not when it was archived.
 
 Prints a per-file `[VIDEO]`/`[COPY]`/`[ERROR]` line as it goes, then a final count and a source-vs-destination size comparison.
 
@@ -205,7 +217,11 @@ Prints a per-file `[VIDEO]`/`[COPY]`/`[ERROR]` line as it goes, then a final cou
 
 ## common.py
 
-Shared helper used by all scripts. `is_video(filename)` runs ffprobe on the file and returns `True` if it contains a video stream — format-agnostic, works on any container.
+Shared helpers used by every script:
+
+- `is_video(filename)` — runs ffprobe on the file and returns `True` if it contains a video stream, excluding still images (PNG/JPEG/GIF etc., which ffprobe also reports a "video" stream for). Format-agnostic, works on any container.
+- `iter_files(source)` / `iter_videos(source)` — generators that walk `source` recursively and yield `(root, file)` tuples; `iter_videos` filters to files where `is_video` is true. Used by every script instead of a hand-rolled `os.walk` loop.
+- `get_logger(name)` / `add_file_handler(logger, path)` — a console logger every script uses by default, plus an opt-in file handler wired up behind each script's `-l/--log-file` flag.
 
 ---
 
