@@ -18,6 +18,8 @@ The script checks for system dependencies (`python3`, `pip3`, `ffmpeg`, `ffprobe
 
 **macOS:** `brew install git python3 ffmpeg`
 
+`archiver.py` additionally needs `libmagic1` (Ubuntu/Debian) / `libmagic` (macOS) — the installer checks for it and warns if missing, but won't block the rest of the install.
+
 ### Build standalone binaries
 
 After installing, run:
@@ -179,6 +181,25 @@ python generate-test-media.py -c 23      # lower CRF = higher quality (range 0�
 ```
 
 Output is written to `videos/`, `images/`, and `videos_merge/` in the current directory.
+
+---
+
+### archiver.py
+
+Archives a project folder to a new location: non-video files are copied as-is, video files are re-encoded to H.265, and the original directory structure is preserved. The source folder name is always kept under the destination (e.g. `-d ~/Desktop/archive` with a source named `tet` writes to `~/Desktop/archive/tet/`).
+
+```bash
+python archiver.py -s /path/to/project -d /path/to/archive
+python archiver.py -s /path/to/project -d /path/to/archive -c 23   # lower CRF = higher quality (range 0–51)
+python archiver.py -s /path/to/project -d /path/to/archive -n     # dry run — print actions without writing
+python archiver.py -s /path/to/project -d /path/to/archive -l     # also log to <destination>/<project>/archiver.log
+```
+
+`-s/--source_directory` and `-d/--destination_directory` are required — this script can move a lot of data, so the paths are never defaulted. Default CRF = 28.
+
+Video detection here is two-layered: a fast `libmagic` MIME check first, falling back to the same ffprobe-based check the rest of the suite uses (`common.is_video`) for formats libmagic misidentifies (AVCHD `.mts`/`.m2ts`, MPEG-TS, VOB, etc.). Needs `libmagic1`/`libmagic` installed — see System dependencies above.
+
+Prints a per-file `[VIDEO]`/`[COPY]`/`[ERROR]` line as it goes, then a final count and a source-vs-destination size comparison.
 
 ---
 

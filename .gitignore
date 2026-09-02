@@ -1,5 +1,6 @@
 videos1/
 videos_merge/
+project-archiver/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

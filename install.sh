@@ -27,6 +27,12 @@ check_cmd pip3    "sudo apt install python3-pip  /  brew install python3"
 check_cmd ffmpeg  "sudo apt install ffmpeg  /  brew install ffmpeg"
 check_cmd ffprobe "ffprobe is part of ffmpeg — reinstall ffmpeg"
 
+if ldconfig -p 2>/dev/null | grep -q 'libmagic\.so'; then
+    ok "libmagic found"
+else
+    warn "libmagic not found — archiver.py needs it.  Hint: sudo apt install libmagic1  /  brew install libmagic"
+fi
+
 echo ""
 
 # ── clone or update ───────────────────────────────────────────────────────────
