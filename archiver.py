@@ -40,6 +40,20 @@ def _is_video(file_path: Path) -> bool:
     return is_video(file_path)
 
 
+def _video_duration(file_path: Path) -> float:
+    result = subprocess.run(
+        [
+            "ffprobe", "-v", "error",
+            "-show_entries", "format=duration",
+            "-of", "csv=p=0",
+            str(file_path),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    return float(result.stdout.strip())
+
+
 def _compress_video(src: Path, dst: Path, crf: int) -> Path:
     # H.265 output always in .mp4 container
     dst = dst.with_suffix(".mp4")
@@ -50,6 +64,21 @@ def _compress_video(src: Path, dst: Path, crf: int) -> Path:
     )
     if result.returncode != 0:
         raise RuntimeError(result.stderr.decode(errors="replace").strip())
+
+    try:
+        src_duration = _video_duration(src)
+        dst_duration = _video_duration(dst)
+    except ValueError:
+        raise RuntimeError(f"could not verify output duration for {dst}")
+    tolerance = max(0.5, src_duration * 0.02)
+    if abs(src_duration - dst_duration) > tolerance:
+        raise RuntimeError(
+            f"output duration mismatch: source {src_duration:.1f}s vs output {dst_duration:.1f}s "
+            "— output may be truncated"
+        )
+
+    # preserve the original recording date instead of "whenever it was archived"
+    shutil.copystat(src, dst)
     return dst
 
 
