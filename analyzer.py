@@ -10,10 +10,15 @@ video_input_directory = Path.cwd()
 def main(directory = video_input_directory):
     for root, dirs, files in os.walk( directory ):
         for file in files:
-            if is_video(Path(root, file)):
-                video = Path(root, file)
-                v = ffmpeg.probe(video)["streams"][0]
-                logger.info('%s  %sx%s  %s  %ss', video, v['width'], v['height'], v['codec_name'], v['duration'])
+            video = Path(root, file)
+            if is_video(video):
+                try:
+                    probe = ffmpeg.probe(video)
+                    v = next(s for s in probe['streams'] if s['codec_type'] == 'video')
+                    duration = v.get('duration') or probe['format'].get('duration', 'unknown')
+                    logger.info('%s  %sx%s  %s  %ss', video, v['width'], v['height'], v['codec_name'], duration)
+                except (StopIteration, KeyError, ffmpeg.Error) as e:
+                    logger.warning('could not read metadata for %s: %s', video, e)
 
 
 if __name__ == '__main__':
