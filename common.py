@@ -1,4 +1,7 @@
 import logging
+import os
+from pathlib import Path
+
 import ffmpeg
 
 def get_logger(name):
@@ -31,3 +34,13 @@ def is_video(filename):
     except ffmpeg.Error as e:
         get_logger(__name__).warning('ffprobe failed for %s: %s', filename, e)
         return False
+
+def iter_files(source):
+    for root, dirs, files in os.walk(source):
+        for file in files:
+            yield root, file
+
+def iter_videos(source):
+    for root, file in iter_files(source):
+        if is_video(Path(root, file)):
+            yield root, file

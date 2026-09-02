@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # recursive batch compressor with ffmpeg
 
-import os
 from pathlib import Path
 import subprocess
-from common import is_video, get_logger, add_file_handler
+from common import get_logger, add_file_handler, iter_videos
 
 logger = get_logger(__name__)
 
@@ -32,10 +31,11 @@ def video_compressor(root, file, source, destination, crf=28, dry_run=False):
 def main(source=video_input_directory, destination=video_output_directory, crf=28, dry_run=False):
     if not dry_run:
         Path(destination).mkdir(parents=True, exist_ok=True)
-    for root, dirs, files in os.walk(Path(source)):
-        for file in files:
-            if is_video(Path(root, file)):
-                video_compressor(root, file, source, destination, crf, dry_run)
+    for root, file in iter_videos(source):
+        try:
+            video_compressor(root, file, source, destination, crf, dry_run)
+        except Exception as e:
+            logger.error('failed on %s: %s', Path(root, file), e)
 
 if __name__ == '__main__':
     import argparse

@@ -1,4 +1,3 @@
-import os
 import shutil
 import subprocess
 from dataclasses import dataclass
@@ -6,7 +5,7 @@ from pathlib import Path
 
 import magic  # pip install python-magic
 
-from common import is_video, get_logger, add_file_handler
+from common import is_video, get_logger, add_file_handler, iter_files
 
 logger = get_logger(__name__)
 
@@ -24,7 +23,10 @@ class Project:
 
 def _check_ffmpeg():
     for tool in ("ffmpeg", "ffprobe"):
-        result = subprocess.run([tool, "-version"], capture_output=True)
+        try:
+            result = subprocess.run([tool, "-version"], capture_output=True)
+        except FileNotFoundError:
+            raise RuntimeError(f"{tool} not found — install ffmpeg before running this tool")
         if result.returncode != 0:
             raise RuntimeError(f"{tool} not found — install ffmpeg before running this tool")
 
@@ -38,14 +40,31 @@ def _is_video(file_path: Path) -> bool:
     return is_video(file_path)
 
 
+def _is_hevc(file_path: Path) -> bool:
+    result = subprocess.run(
+        [
+            "ffprobe", "-v", "error",
+            "-select_streams", "v:0",
+            "-show_entries", "stream=codec_name",
+            "-of", "csv=p=0",
+            str(file_path),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip() == "hevc"
+
+
 def _compress_video(src: Path, dst: Path, crf: int) -> Path:
     # H.265 output always in .mp4 container
     dst = dst.with_suffix(".mp4")
     dst.parent.mkdir(parents=True, exist_ok=True)
-    result = subprocess.run(
-        ["ffmpeg", "-i", str(src), "-vcodec", "libx265", "-crf", str(crf), "-y", str(dst)],
-        capture_output=True,
-    )
+    if _is_hevc(src):
+        # already H.265 — remux instead of a wasteful re-encode
+        args = ["ffmpeg", "-i", str(src), "-c", "copy", "-y", str(dst)]
+    else:
+        args = ["ffmpeg", "-i", str(src), "-vcodec", "libx265", "-crf", str(crf), "-y", str(dst)]
+    result = subprocess.run(args, capture_output=True)
     if result.returncode != 0:
         raise RuntimeError(result.stderr.decode(errors="replace").strip())
     return dst
@@ -72,31 +91,29 @@ def _dir_stats(path: Path) -> tuple[int, int]:
 def archive_project(source: Path, destination: Path, crf: int = 28, dry_run: bool = False) -> Project:
     project = Project(name=source.name)
 
-    for root, _, files in os.walk(source):
+    for root, file in iter_files(source):
         root_path = Path(root)
         rel = root_path.relative_to(source)
+        src_file = root_path / file
+        dst_file = destination / rel / file
 
-        for file in files:
-            src_file = root_path / file
-            dst_file = destination / rel / file
-
-            try:
-                if _is_video(src_file):
-                    out = dst_file.with_suffix(".mp4")
-                    logger.info('[VIDEO] %s -> %s', src_file, out)
-                    if not dry_run:
-                        out = _compress_video(src_file, dst_file, crf)
-                        logger.info('done %s', out)
-                    project.videos += 1
-                else:
-                    logger.info('[COPY] %s -> %s', src_file, dst_file)
-                    if not dry_run:
-                        _copy_file(src_file, dst_file)
-                        logger.info('done %s', dst_file)
-                    project.nonvideos += 1
-            except Exception as exc:
-                project.errors += 1
-                logger.error('[ERROR] %s: %s', src_file, exc)
+        try:
+            if _is_video(src_file):
+                out = dst_file.with_suffix(".mp4")
+                logger.info('[VIDEO] %s -> %s', src_file, out)
+                if not dry_run:
+                    out = _compress_video(src_file, dst_file, crf)
+                    logger.info('done %s', out)
+                project.videos += 1
+            else:
+                logger.info('[COPY] %s -> %s', src_file, dst_file)
+                if not dry_run:
+                    _copy_file(src_file, dst_file)
+                    logger.info('done %s', dst_file)
+                project.nonvideos += 1
+        except Exception as exc:
+            project.errors += 1
+            logger.error('[ERROR] %s: %s', src_file, exc)
 
     return project
 
@@ -126,7 +143,11 @@ def main(source_directory: str, destination_directory: str, crf: int = 28, dry_r
         log_path.parent.mkdir(parents=True, exist_ok=True)
         add_file_handler(logger, log_path)
 
-    _check_ffmpeg()
+    try:
+        _check_ffmpeg()
+    except RuntimeError as e:
+        logger.error(str(e))
+        return
 
     logger.info('Source:      %s', source)
     logger.info('Destination: %s', destination)

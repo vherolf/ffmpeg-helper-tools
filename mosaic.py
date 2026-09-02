@@ -9,32 +9,22 @@
 # |         |         |
 # |_________|_________|
 
-import os
 from pathlib import Path
 import subprocess
-from common import is_video, get_logger
+from common import get_logger, add_file_handler, iter_videos
 
-# define users home directory
 logger = get_logger(__name__)
-
-home = str(Path.home())
 
 # video input files (current directory)
 video_input_directory = Path.cwd()
 
-# video output directory
-video_output_directory = os.path.join(home,'Desktop', 'merged_videos')
-
-videos = {}
-
-def build_video_dict(root, file):
-    # build video dictionary list 
-    if root in  videos.keys():
+def build_video_dict(videos, root, file):
+    if root in videos:
         videos[root].append(file)
     else:
         videos[root] = [file]
 
-def video_merger(videos, source, destination, vertical=False, crf=28):
+def video_merger(videos, source, destination, vertical=False, crf=28, dry_run=False):
 
     for root,files in videos.items():
         if len(files) != 2:
@@ -47,11 +37,13 @@ def video_merger(videos, source, destination, vertical=False, crf=28):
             videobottom = Path(root, files[1])
 
             videooutdir = Path(destination, relative_dir.lstrip('/'))
-            videooutdir.mkdir(parents=True, exist_ok=True)
             videooutfile = Path(videooutdir, 'out.mp4')
 
             logger.info('merging %s + %s -> %s', videotop.name, videobottom.name, videooutfile)
+            if dry_run:
+                continue
 
+            videooutdir.mkdir(parents=True, exist_ok=True)
             stack = 'vstack' if vertical else 'hstack'
             returncode = subprocess.call(['ffmpeg', '-i', videotop, '-i', videobottom, '-filter_complex', f'{stack}=inputs=2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), videooutfile, '-y'])
             if returncode == 0:
@@ -61,20 +53,15 @@ def video_merger(videos, source, destination, vertical=False, crf=28):
         except Exception as e:
             logger.error('failed to merge %s: %s', root, e)
 
-#def main(vertical=False):
-#    for root, dirs, files in os.walk( video_input_directory ):
-#        for file in files:
-#            if file.endswith( mimetype ):
-#                build_video_dict(root, file)
+def main(source=video_input_directory, destination=video_input_directory, vertical=False, crf=28, dry_run=False):
+    if not dry_run:
+        Path(destination).mkdir(parents=True, exist_ok=True)
 
-def main(source=video_input_directory, destination=video_input_directory, vertical=False, crf=28):
-    Path(destination).mkdir(parents=True, exist_ok=True)
-    for root, dirs, files in os.walk(source):
-        for file in files:
-            if is_video(Path(root, file)):
-                build_video_dict(root, file)
+    videos = {}
+    for root, file in iter_videos(source):
+        build_video_dict(videos, root, file)
 
-    video_merger(videos, source=source, destination=destination, vertical=vertical, crf=crf)
+    video_merger(videos, source=source, destination=destination, vertical=vertical, crf=crf, dry_run=dry_run)
 
 if __name__ == '__main__':
     import argparse
@@ -83,5 +70,12 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--destination", default=video_input_directory)
     parser.add_argument("-v", "--vertical", default=False, action="store_true")
     parser.add_argument("-c", "--crf", type=int, default=28)
+    parser.add_argument('-n', '--dry-run', action='store_true')
+    parser.add_argument('-l', '--log-file', nargs='?', const=True,
+                         help='also write log output to a file (default: <destination>/mosaic.log)')
     args = parser.parse_args()
-    main(source=args.source, destination=args.destination, vertical=args.vertical, crf=args.crf)
+    if args.log_file:
+        log_path = Path(args.destination, 'mosaic.log') if args.log_file is True else Path(args.log_file)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        add_file_handler(logger, log_path)
+    main(source=args.source, destination=args.destination, vertical=args.vertical, crf=args.crf, dry_run=args.dry_run)
