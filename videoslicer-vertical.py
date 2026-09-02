@@ -41,15 +41,24 @@ def video_slicer(root, file, destination, crf=28):
     videoout2 = outdir / f'{video_day}_{video_time}_scene2.mkv'
 
     logger.info('%s -> %s', videoin, outdir)
-    subprocess.call(['ffmpeg', '-i', videoin, '-filter:v', 'crop=iw:ih/2:0:0',    '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), '-c:a', 'copy', videoout1, '-y'])
-    subprocess.call(['ffmpeg', '-i', videoin, '-filter:v', 'crop=iw:ih/2:0:ih/2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), '-c:a', 'copy', videoout2, '-y'])
+    rc1 = subprocess.call(['ffmpeg', '-i', videoin, '-filter:v', 'crop=iw:ih/2:0:0',    '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), '-c:a', 'copy', videoout1, '-y'])
+    rc2 = subprocess.call(['ffmpeg', '-i', videoin, '-filter:v', 'crop=iw:ih/2:0:ih/2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), '-c:a', 'copy', videoout2, '-y'])
+    if rc1 == 0 and rc2 == 0:
+        logger.info('done %s', outdir)
+    else:
+        logger.error('ffmpeg failed (exit %d/%d) on %s', rc1, rc2, videoin)
 
 def main(source=video_input_directory, destination=video_output, crf=28):
     Path(destination).mkdir(parents=True, exist_ok=True)
     for root, dirs, files in os.walk(source):
         for file in files:
             if is_video(Path(root, file)):
-                video_slicer(root, file, destination, crf)
+                try:
+                    video_slicer(root, file, destination, crf)
+                except ValueError:
+                    logger.error("%s doesn't match the expected 'YYYY-MM-DD HH-MM-SS.ext' filename format — skipping", Path(root, file))
+                except Exception as e:
+                    logger.error('failed on %s: %s', Path(root, file), e)
 
 if __name__ == '__main__':
     import argparse

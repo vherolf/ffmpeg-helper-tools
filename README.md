@@ -68,6 +68,8 @@ python compressor.py
 python compressor.py -s /path/to/videos -d /path/to/output
 python compressor.py -c 23               # lower CRF = higher quality (range 0–51)
 python compressor.py -n                  # dry run — print actions without encoding
+python compressor.py -l                  # also log to <destination>/compressor.log
+python compressor.py -l /path/to/file.log  # or log to a specific file
 ```
 
 Defaults: source = current directory, destination = `~/Desktop/compressed_videos`, CRF = 28.
@@ -82,10 +84,11 @@ Resizes videos to 720p height while preserving aspect ratio.
 python resizer.py
 python resizer.py -s /path/to/videos -d /path/to/output
 python resizer.py -r 1080                # resize to 1080p instead
+python resizer.py -c 23                  # lower CRF = higher quality (range 0–51)
 python resizer.py -n                     # dry run — print actions without resizing
 ```
 
-Defaults: source = current directory, destination = `~/Desktop/resized_videos`, resolution = 720.
+Defaults: source = current directory, destination = `~/Desktop/resized_videos`, resolution = 720, CRF = 28.
 
 ---
 
@@ -110,10 +113,12 @@ Merges pairs of videos found in the same folder side-by-side (default) or stacke
 ```bash
 python mosaic.py                  # horizontal (side-by-side)
 python mosaic.py -v               # vertical (stacked)
-python mosaic.py -d /path/to/videos
+python mosaic.py -s /path/to/videos
+python mosaic.py -s /path/to/videos -d /path/to/output
+python mosaic.py -c 23            # lower CRF = higher quality (range 0–51)
 ```
 
-Each subfolder must contain exactly 2 video files.
+Each subfolder must contain exactly 2 video files (others are skipped with a warning).
 
 ---
 
@@ -124,7 +129,11 @@ Like `mosaic.py` but uses `_left` / `_right` in filenames to determine order. Th
 ```bash
 python mosaic-left-right.py
 python mosaic-left-right.py -d /path/to/videos
+python mosaic-left-right.py -v          # vertical (stacked)
+python mosaic-left-right.py -c 23       # lower CRF = higher quality (range 0–51)
 ```
+
+Output always goes to `~/Desktop/merged_videos` (no destination override). Each subfolder must contain exactly 2 video files (others are skipped with a warning).
 
 ---
 
@@ -136,10 +145,11 @@ A video at 5760x1080 produces three 1920x1080 clips.
 ```bash
 python videoslicer-horizontal.py
 python videoslicer-horizontal.py -s /path/to/videos -d /path/to/output
+python videoslicer-horizontal.py -c 23   # lower CRF = higher quality (range 0–51)
 ```
 
-Filenames must follow the format `YYYY-MM-DD HH-MM-SS.ext` (e.g. `2022-05-24 15-46-07.mkv`).
-Output is written to `<destination>/<date>/<time>/`. Defaults: source = current directory, destination = `~/Desktop/sliced_videos`.
+Filenames must follow the format `YYYY-MM-DD HH-MM-SS.ext` (e.g. `2022-05-24 15-46-07.mkv`) — files that don't match are skipped with an error.
+Output is written to `<destination>/<date>/<time>/`. Defaults: source = current directory, destination = `~/Desktop/sliced_videos`, CRF = 28.
 
 ---
 
@@ -150,9 +160,11 @@ A video at 1920x1080 produces two 960x540 clips.
 
 ```bash
 python videoslicer-vertical.py
+python videoslicer-vertical.py -s /path/to/videos -d /path/to/output
+python videoslicer-vertical.py -c 23     # lower CRF = higher quality (range 0–51)
 ```
 
-Same filename format requirement as `videoslicer-horizontal.py`.
+Same filename format requirement as `videoslicer-horizontal.py` (non-matching files are skipped with an error). Defaults: source = current directory, destination = `~/Desktop/sliced_videos`, CRF = 28.
 
 ---
 
@@ -163,6 +175,7 @@ Generates numbered test images (using Pillow) and converts them to videos — us
 ```bash
 python generate-test-media.py            # generate images + videos
 python generate-test-media.py -l         # list available fonts
+python generate-test-media.py -c 23      # lower CRF = higher quality (range 0–51)
 ```
 
 Output is written to `videos/`, `images/`, and `videos_merge/` in the current directory.
@@ -181,7 +194,7 @@ Shared helper used by all scripts. `is_video(filename)` runs ffprobe on the file
 ```ffmpeg -i input.MTS output.mp4```  
 
 ## compress videos
-crf is 0-52 (23-28 is a good choice)  
+crf is 0-51 (23-28 is a good choice)  
 compress the videos with ffmpeg to h.265 (better)  
 ```ffmpeg -i videoin.mp4 -vcodec libx265 -crf 28 -c:a copy videoout.mp4 -y```  
 compress the videos with ffmpeg to h.264 (for legacy systems)  
@@ -203,7 +216,7 @@ https://video.stackexchange.com/questions/4563/how-can-i-crop-a-video-with-ffmpe
 
 ## make animated gif from mp4
 
-```ffmpeg -i input.pm4 rainbowunicorn.gif```
+```ffmpeg -i input.mp4 rainbowunicorn.gif```
 
 ## view rtsp stream full screen with ffplay
 

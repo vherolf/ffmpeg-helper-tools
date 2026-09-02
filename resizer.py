@@ -23,7 +23,11 @@ def video_resize(root, file, source, destination, resolution=720, crf=28, dry_ru
     if dry_run:
         return
     videooutdir.mkdir(parents=True, exist_ok=True)
-    subprocess.call(['ffmpeg', '-i', videoin, '-vf', f'scale=-2:{resolution}', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), '-c:a', 'copy', videoout, '-y'])
+    returncode = subprocess.call(['ffmpeg', '-i', videoin, '-vf', f'scale=-2:{resolution}', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), '-c:a', 'copy', videoout, '-y'])
+    if returncode == 0:
+        logger.info('done %s', videoout)
+    else:
+        logger.error('ffmpeg failed (exit %d) on %s', returncode, videoin)
 
 def main(source=video_input_directory, destination=video_output_directory, resolution=720, crf=28, dry_run=False):
     if not dry_run:
@@ -31,7 +35,10 @@ def main(source=video_input_directory, destination=video_output_directory, resol
     for root, dirs, files in os.walk(source):
         for file in files:
             if is_video(Path(root, file)):
-                video_resize(root, file, source, destination, resolution, crf, dry_run)
+                try:
+                    video_resize(root, file, source, destination, resolution, crf, dry_run)
+                except Exception as e:
+                    logger.error('failed on %s: %s', Path(root, file), e)
 
 if __name__ == '__main__':
     import argparse

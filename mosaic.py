@@ -37,20 +37,29 @@ def build_video_dict(root, file):
 def video_merger(videos, source, destination, vertical=False, crf=28):
 
     for root,files in videos.items():
-        relative_dir = root.removeprefix(str(source))
-        videotop = Path(root, files[0])
-        videobottom = Path(root, files[1])
+        if len(files) != 2:
+            logger.warning('%s has %d video(s), expected exactly 2 — skipping', root, len(files))
+            continue
 
-        videooutdir = Path(destination, relative_dir.lstrip('/'))
-        videooutdir.mkdir(parents=True, exist_ok=True)
-        videooutfile = Path(videooutdir, 'out.mp4')
+        try:
+            relative_dir = root.removeprefix(str(source))
+            videotop = Path(root, files[0])
+            videobottom = Path(root, files[1])
 
-        logger.info('merging %s + %s -> %s', videotop.name, videobottom.name, videooutfile)
+            videooutdir = Path(destination, relative_dir.lstrip('/'))
+            videooutdir.mkdir(parents=True, exist_ok=True)
+            videooutfile = Path(videooutdir, 'out.mp4')
 
-        if vertical == False:
-            subprocess.call(['ffmpeg', '-i', videotop, '-i', videobottom, '-filter_complex', 'hstack=inputs=2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), videooutfile, '-y'])
-        elif vertical == True:
-            subprocess.call(['ffmpeg', '-i', videotop, '-i', videobottom, '-filter_complex', 'vstack=inputs=2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), videooutfile, '-y'])
+            logger.info('merging %s + %s -> %s', videotop.name, videobottom.name, videooutfile)
+
+            stack = 'vstack' if vertical else 'hstack'
+            returncode = subprocess.call(['ffmpeg', '-i', videotop, '-i', videobottom, '-filter_complex', f'{stack}=inputs=2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), videooutfile, '-y'])
+            if returncode == 0:
+                logger.info('done %s', videooutfile)
+            else:
+                logger.error('ffmpeg failed (exit %d) on %s', returncode, root)
+        except Exception as e:
+            logger.error('failed to merge %s: %s', root, e)
 
 #def main(vertical=False):
 #    for root, dirs, files in os.walk( video_input_directory ):

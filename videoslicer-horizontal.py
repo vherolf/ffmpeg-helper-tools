@@ -39,7 +39,7 @@ def video_slicer(root, file, destination, crf=28):
         '[b]crop=iw/3:ih:iw/3:0[s2];'
         '[c]crop=iw/3:ih:(iw/3)*2:0[s3]'
     )
-    subprocess.call([
+    returncode = subprocess.call([
         'ffmpeg', '-i', videoin,
         '-filter_complex', filter_complex,
         '-map', '[s1]', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), '-c:a', 'copy', videoout1,
@@ -47,13 +47,22 @@ def video_slicer(root, file, destination, crf=28):
         '-map', '[s3]', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), '-c:a', 'copy', videoout3,
         '-y'
     ])
+    if returncode == 0:
+        logger.info('done %s', outdir)
+    else:
+        logger.error('ffmpeg failed (exit %d) on %s', returncode, videoin)
 
 def main(source=video_input_directory, destination=video_output_directory, crf=28):
     Path(destination).mkdir(parents=True, exist_ok=True)
     for root, dirs, files in os.walk(source):
         for file in files:
             if is_video(Path(root, file)):
-                video_slicer(root, file, destination, crf)
+                try:
+                    video_slicer(root, file, destination, crf)
+                except ValueError:
+                    logger.error("%s doesn't match the expected 'YYYY-MM-DD HH-MM-SS.ext' filename format — skipping", Path(root, file))
+                except Exception as e:
+                    logger.error('failed on %s: %s', Path(root, file), e)
 
 if __name__ == '__main__':
     import argparse

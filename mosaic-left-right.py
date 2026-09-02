@@ -38,37 +38,37 @@ def build_video_dict(root, file):
 def video_merger(videos, vertical=False, crf=28):
 
     for root,files in videos.items():
-        #check if only 2 videos in folder
-        #print(root, files)
+        if len(files) != 2:
+            logger.warning('%s has %d video(s), expected exactly 2 — skipping', root, len(files))
+            continue
 
-        relative_dir = root.removeprefix( str(video_input_directory) )
-        
-        #videoright = Path(root, files[0])
-        #videoleft = Path(root, files[1])
-        
-        videooutdir = Path(video_output_directory, relative_dir.lstrip('/'))
-        videooutdir.mkdir(parents=True, exist_ok=True)
-        #videooutfile = Path(videooutdir, 'out.mp4' )
+        try:
+            relative_dir = root.removeprefix( str(video_input_directory) )
 
-        if files[0].find('right') != -1:
-            video = files[0].split('right')
-            #print("right", files[0], videoright)
-            videooutfile = Path(videooutdir, video[0].rstrip('_') +'.mp4')
-            videoleft = Path(root, files[1])
-            videoright = Path(root, files[0])
-        else:
-            video = files[0].split('left')
-            videooutfile = Path(videooutdir, video[0].rstrip('_') + '.mp4')
-            videoleft = Path(root, files[0])
-            videoright = Path(root, files[1])
+            videooutdir = Path(video_output_directory, relative_dir.lstrip('/'))
+            videooutdir.mkdir(parents=True, exist_ok=True)
 
-        logger.info('merging %s + %s -> %s', videoleft.name, videoright.name, videooutfile)
+            if files[0].find('right') != -1:
+                video = files[0].split('right')
+                videooutfile = Path(videooutdir, video[0].rstrip('_') +'.mp4')
+                videoleft = Path(root, files[1])
+                videoright = Path(root, files[0])
+            else:
+                video = files[0].split('left')
+                videooutfile = Path(videooutdir, video[0].rstrip('_') + '.mp4')
+                videoleft = Path(root, files[0])
+                videoright = Path(root, files[1])
 
-        if vertical == False:
-            subprocess.call(['ffmpeg', '-i', videoleft, '-i', videoright, '-filter_complex', 'hstack=inputs=2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), videooutfile, '-y'])
+            logger.info('merging %s + %s -> %s', videoleft.name, videoright.name, videooutfile)
 
-        elif vertical == True:
-            subprocess.call(['ffmpeg', '-i', videoleft, '-i', videoright, '-filter_complex', 'vstack=inputs=2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), videooutfile, '-y'])
+            stack = 'vstack' if vertical else 'hstack'
+            returncode = subprocess.call(['ffmpeg', '-i', videoleft, '-i', videoright, '-filter_complex', f'{stack}=inputs=2', '-c:v', 'libx265', '-preset', 'slow', '-crf', str(crf), videooutfile, '-y'])
+            if returncode == 0:
+                logger.info('done %s', videooutfile)
+            else:
+                logger.error('ffmpeg failed (exit %d) on %s', returncode, root)
+        except Exception as e:
+            logger.error('failed to merge %s: %s', root, e)
 
 #def main(vertical=False):
 #    for root, dirs, files in os.walk( video_input_directory ):
