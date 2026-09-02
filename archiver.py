@@ -40,31 +40,14 @@ def _is_video(file_path: Path) -> bool:
     return is_video(file_path)
 
 
-def _is_hevc(file_path: Path) -> bool:
-    result = subprocess.run(
-        [
-            "ffprobe", "-v", "error",
-            "-select_streams", "v:0",
-            "-show_entries", "stream=codec_name",
-            "-of", "csv=p=0",
-            str(file_path),
-        ],
-        capture_output=True,
-        text=True,
-    )
-    return result.stdout.strip() == "hevc"
-
-
 def _compress_video(src: Path, dst: Path, crf: int) -> Path:
     # H.265 output always in .mp4 container
     dst = dst.with_suffix(".mp4")
     dst.parent.mkdir(parents=True, exist_ok=True)
-    if _is_hevc(src):
-        # already H.265 — remux instead of a wasteful re-encode
-        args = ["ffmpeg", "-i", str(src), "-c", "copy", "-y", str(dst)]
-    else:
-        args = ["ffmpeg", "-i", str(src), "-vcodec", "libx265", "-crf", str(crf), "-y", str(dst)]
-    result = subprocess.run(args, capture_output=True)
+    result = subprocess.run(
+        ["ffmpeg", "-i", str(src), "-vcodec", "libx265", "-crf", str(crf), "-y", str(dst)],
+        capture_output=True,
+    )
     if result.returncode != 0:
         raise RuntimeError(result.stderr.decode(errors="replace").strip())
     return dst
