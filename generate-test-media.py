@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from PIL import ImageFont
+from PIL import Image, ImageDraw, ImageFont
 from pathlib import Path
 import subprocess
 from common import get_logger
@@ -8,6 +8,7 @@ from common import get_logger
 logger = get_logger(__name__)
 
 video_dir = Path(Path.cwd(), 'videos')
+image_dir = Path(Path.cwd(), 'images')
 
 FFMPEG = 'ffmpeg'
 
@@ -22,18 +23,21 @@ CODECS = {
              'crf': 35},
 }
 
-# name used in the filename -> (ffmpeg background color, font color)
+# name used in the filename -> (background color for ffmpeg and pillow, font color)
 COLORS = {
     'blue': ('blue', 'white'),
     'green': ('green', 'white'),
     'white': ('white', 'black'),
     'red': ('red', 'white'),
     'pink': ('pink', 'black'),
-    'darkgrey': ('0x404040', 'white'),
+    'darkgrey': ('#404040', 'white'),
 }
 
 # video lengths in seconds
 DURATIONS = [30, 60]
+
+# digits drawn on the test images
+DIGITS = range(7)
 
 # background tune: semitones above the base note, one per half second, None is a rest
 # C E G C G E C (rest) - a 4 second loop, one note lands on every full second of the counter
@@ -47,6 +51,19 @@ def encoder_args(codec='x264', crf=None):
 def codec_dir(codec='x264'):
     out = CODECS[codec]['dir']
     out.mkdir(parents=True, exist_ok=True)
+    return out
+
+# write text in the middle of the image
+def generate_test_image(name='white', text=u'1', width=1280, height=720, fontsize=700, fontcolor='black', backgroundcolor='white', image_dir=image_dir):
+    image_dir.mkdir(parents=True, exist_ok=True)
+    font = ImageFont.truetype("FreeMono.ttf", fontsize, encoding="unic")
+    canvas = Image.new('RGB', (width, height), backgroundcolor)
+    draw = ImageDraw.Draw(canvas)
+    # use anchor="mm" for center in middle (THANK YOU STACK OVERFLOW)
+    draw.text((width/2, height/2), text, fontcolor, font, anchor="mm")
+    out = Path(image_dir, f'{name}{text}.png')
+    canvas.save(out, "PNG")
+    logger.info('generated image %s', out)
     return out
 
 # drawtext filter that shows the current frame number at the bottom of the video
@@ -109,6 +126,8 @@ if __name__=='__main__':
                         help="background colors to generate (default: all)")
     parser.add_argument("--duration", nargs='+', type=int, default=DURATIONS,
                         help=f"video lengths in seconds (default: {' '.join(map(str, DURATIONS))})")
+    parser.add_argument("--images-only", default=False, action="store_true",
+                        help="only generate the test images in images/, no videos")
     args = parser.parse_args()
 
     # list fonts available and exit
@@ -117,7 +136,15 @@ if __name__=='__main__':
         exit()
 
     # default behaviour without any commandline options
-    # generates <color>-<duration>.mp4 for every codec, color and duration
+    # generates <color><digit>.png test images for every color
+    for name in args.color:
+        backgroundcolor, fontcolor = COLORS[name]
+        for digit in DIGITS:
+            generate_test_image(name, f'{digit}', fontcolor=fontcolor, backgroundcolor=backgroundcolor)
+    if args.images_only:
+        exit()
+
+    # and <color>-<duration>.mp4 for every codec, color and duration
     for codec in args.codec:
         for duration in args.duration:
             for name in args.color:
