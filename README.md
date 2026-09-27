@@ -182,15 +182,25 @@ Same filename format requirement as `videoslicer-horizontal.py` (non-matching fi
 
 ### generate-test-media.py
 
-Generates numbered test images (using Pillow) and converts them to videos — useful for testing the other scripts.
+Generates solid color test videos with a running seconds counter in the middle and the frame number at the bottom — useful for testing the other scripts.
+
+Files are named `<color>-<duration>.mp4` (e.g. `blue-60.mp4`) for the colors blue, green, white, red, pink and darkgrey and the durations 30 and 60 seconds (1280x720, 25 fps, a quiet looping C major tune as AAC audio, CPU encoding).
 
 ```bash
-python generate-test-media.py            # generate images + videos
-python generate-test-media.py -l         # list available fonts
-python generate-test-media.py -c 23      # lower CRF = higher quality (range 0–51)
+python generate-test-media.py                                  # x264 and av1, all colors and durations
+python generate-test-media.py --codec av1                      # only av1
+python generate-test-media.py --color blue red --duration 30   # a subset
+python generate-test-media.py --duration 720 3600              # longer videos, any length in seconds
+python generate-test-media.py -c 30                            # same crf for every codec
+python generate-test-media.py -l                               # list available fonts
 ```
 
-Output is written to `videos/`, `images/`, and `videos_merge/` in the current directory.
+Output is written to subfolders of `videos/` in the current directory. Both codecs play in Chrome, Firefox, Edge and Safari 17+:
+
+| Folder | Codec | Default CRF |
+|---|---|---|
+| `videos/x264/` | H.264 (libx264) | 23 |
+| `videos/av1/` | AV1 (libsvtav1) | 35 |
 
 ---
 
