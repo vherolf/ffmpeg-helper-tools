@@ -210,6 +210,23 @@ Output is written to subfolders of `videos/` in the current directory. Both code
 | `videos/x264/` | H.264 (libx264) | 23 |
 | `videos/av1/` | AV1 (libsvtav1) | 35 |
 
+**Test input for the other scripts** (10 seconds each, per codec and resolution, generated in the same run):
+
+| Folder | For | Content |
+|---|---|---|
+| `mosaic/<left>-<right>-<height>p/` | `mosaic.py`, `mosaic-left-right.py` | exactly 2 counter videos, `<pair>_left.mp4` and `<pair>_right.mp4` — pairs blue/green, red/white, pink/darkgrey |
+| `videoslicer-horizontal/<height>p/` | `videoslicer-horizontal.py` | `2000-01-01 00-00-10.mp4`, 3 scenes side by side (3840x720 at 720p) |
+| `videoslicer-vertical/<height>p/` | `videoslicer-vertical.py` | `2000-01-01 00-00-10.mp4`, 2 scenes stacked (1280x720 at 720p) |
+
+Every scene has its own color, a `scene N` label, the counter and the frame number, so after slicing or merging you can see right away that each piece is the right one and still in sync.
+
+```bash
+python mosaic.py -s videos/x264/mosaic -d /tmp/merged
+python mosaic-left-right.py -d videos/x264/mosaic
+python videoslicer-horizontal.py -s videos/x264/videoslicer-horizontal -d /tmp/sliced
+python videoslicer-vertical.py -s videos/x264/videoslicer-vertical -d /tmp/sliced
+```
+
 **Sound:** a quiet music-box style tune that loops every 4 seconds — C E G C G E C, then a half second rest. Each note is a short pluck that fades out, and a note starts on every full second when the counter changes, so you can hear if audio and video drift apart after a cut or merge. No audio files are involved: ffmpeg's `aevalsrc` computes the sound from a formula built by `melody_expression()`. To change it, edit in `generate-test-media.py`:
 
 - `MELODY = [0, 4, 7, 12, 7, 4, 0, None]` — semitones above middle C, one per half second, `None` is a rest

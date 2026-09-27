@@ -42,6 +42,18 @@ RESOLUTIONS = [720]
 # digits drawn on the test images
 DIGITS = range(7)
 
+# test input for the other scripts, short is enough
+TOOL_TEST_DURATION = 10
+
+# mosaic.py / mosaic-left-right.py: one folder per pair with exactly 2 videos, <pair>_left.mp4 and <pair>_right.mp4
+MOSAIC_PAIRS = [('blue', 'green'), ('red', 'white'), ('pink', 'darkgrey')]
+
+# videoslicer-*.py: scene colors and how the scenes are put together
+SLICER_SCENES = {
+    'horizontal': (['blue', 'green', 'red'], 'hstack'),  # 3 scenes side by side, e.g. 3840x720
+    'vertical': (['blue', 'green'], 'vstack'),           # 2 scenes stacked, e.g. 1280x720
+}
+
 # background tune: semitones above the base note, one per half second, None is a rest
 # C E G C G E C (rest) - a 4 second loop, one note lands on every full second of the counter
 MELODY = [0, 4, 7, 12, 7, 4, 0, None]
@@ -97,28 +109,65 @@ def melody_expression(melody=MELODY, basefrequency=261.63, notelength=0.5, volum
     tone = f'(sin(2*PI*{frequency}*{notetime})+0.3*sin(4*PI*{frequency}*{notetime}))'
     return f'{volume}*{playing}*{envelope}*{tone}'
 
-# solid color video with a running seconds counter in the middle and the frame number below
-# plus a quiet looping tune (peaks around -24 dBFS) as audio, text scales with the height (500 at 720p)
-def generate_counter_video(name='blue', backgroundcolor='blue', fontcolor='white', height=720, duration=30, framerate=25, volume=0.06, crf=None, codec='x264'):
-    outputname = Path(codec_dir(codec), f'{name}-{duration}-{height}p.mp4')
-    width = width_for(height)
+# filter chain for one solid color panel with a running seconds counter in the middle,
+# the frame number below and an optional label on top, text scales with the height (500 at 720p)
+def counter_panel(backgroundcolor='blue', fontcolor='white', width=1280, height=720, duration=30, framerate=25, label=None):
     fontsize = height * 500 // 720
     fontfile = ImageFont.truetype("FreeMono.ttf", fontsize).path
-    logger.info('generating counter video %s', outputname)
-    counter = (f"drawtext=fontfile={fontfile}:fontsize={fontsize}:fontcolor={fontcolor}"
-               r":text='%{eif\:t\:d}'"
-               ":x=(w-text_w)/2:y=(h-text_h)/2")
-    frame = frame_number_filter(fontcolor, fontsize // 10)
+    parts = [f'color=c={backgroundcolor}:s={width}x{height}:r={framerate}:d={duration}',
+             (f"drawtext=fontfile={fontfile}:fontsize={fontsize}:fontcolor={fontcolor}"
+              r":text='%{eif\:t\:d}'"
+              ":x=(w-text_w)/2:y=(h-text_h)/2"),
+             frame_number_filter(fontcolor, fontsize // 10)]
+    if label:
+        parts.append(f"drawtext=fontfile={fontfile}:fontsize={fontsize // 10}:fontcolor={fontcolor}"
+                     f":text='{label}':x=(w-text_w)/2:y=h/36")
+    return ','.join(parts)
+
+# encode one or more panels (stacked with hstack or vstack) with a quiet looping tune
+# (peaks around -24 dBFS) as audio
+def encode_video(outputname, panels, stack='hstack', duration=30, volume=0.06, crf=None, codec='x264'):
+    outputname.parent.mkdir(parents=True, exist_ok=True)
+    logger.info('generating video %s', outputname)
+    graph = ';'.join(f'{panel}[p{i}]' for i, panel in enumerate(panels))
+    graph += ';' + ''.join(f'[p{i}]' for i in range(len(panels))) + (f'{stack}=inputs={len(panels)}[v]' if len(panels) > 1 else 'null[v]')
     subprocess.run([FFMPEG,
                     '-f', 'lavfi',
-                    '-i', f'color=c={backgroundcolor}:s={width}x{height}:r={framerate}:d={duration}',
-                    '-f', 'lavfi',
                     '-i', f"aevalsrc='{melody_expression(volume=volume)}':s=48000:d={duration}",
+                    '-filter_complex', graph,
+                    '-map', '[v]', '-map', '0:a',
                     *encoder_args(codec, crf),
-                    '-vf', f'{counter},{frame}',
                     '-c:a', 'aac', '-b:a', '128k',
                     '-shortest',
                     outputname, '-y'], check=True)
+
+# solid color counter video <color>-<duration>-<height>p.mp4
+def generate_counter_video(name='blue', height=720, duration=30, crf=None, codec='x264'):
+    backgroundcolor, fontcolor = COLORS[name]
+    outputname = Path(codec_dir(codec), f'{name}-{duration}-{height}p.mp4')
+    encode_video(outputname, [counter_panel(backgroundcolor, fontcolor, width_for(height), height, duration)],
+                 duration=duration, crf=crf, codec=codec)
+
+# input for mosaic.py and mosaic-left-right.py: mosaic/<left>-<right>-<height>p/ with exactly 2 videos
+def generate_mosaic_pair(left='blue', right='green', height=720, duration=TOOL_TEST_DURATION, crf=None, codec='x264'):
+    pair = f'{left}-{right}-{height}p'
+    for side, name in (('left', left), ('right', right)):
+        backgroundcolor, fontcolor = COLORS[name]
+        outputname = Path(codec_dir(codec), 'mosaic', pair, f'{pair}_{side}.mp4')
+        encode_video(outputname, [counter_panel(backgroundcolor, fontcolor, width_for(height), height, duration)],
+                     duration=duration, crf=crf, codec=codec)
+
+# input for videoslicer-horizontal.py (3 scenes side by side) and videoslicer-vertical.py (2 scenes stacked)
+# the slicers need the filename format "YYYY-MM-DD HH-MM-SS.mp4", the time is the video length
+def generate_slicer_video(direction='horizontal', height=720, duration=TOOL_TEST_DURATION, crf=None, codec='x264'):
+    names, stack = SLICER_SCENES[direction]
+    width = width_for(height)
+    panelheight = height if stack == 'hstack' else height // 4 * 2
+    panels = [counter_panel(*COLORS[name], width, panelheight, duration, label=f'scene {i + 1}')
+              for i, name in enumerate(names)]
+    length = f'{duration // 3600:02}-{duration // 60 % 60:02}-{duration % 60:02}'
+    outputname = Path(codec_dir(codec), f'videoslicer-{direction}', f'{height}p', f'2000-01-01 {length}.mp4')
+    encode_video(outputname, panels, stack=stack, duration=duration, crf=crf, codec=codec)
 
 def list_font_families():
     from tkinter import Tk, font
@@ -159,9 +208,14 @@ if __name__=='__main__':
         exit()
 
     # and <color>-<duration>-<height>p.mp4 for every codec, resolution, color and duration
+    # plus short test input for the mosaic and videoslicer scripts
     for codec in args.codec:
         for height in args.resolution:
             for duration in args.duration:
                 for name in args.color:
-                    backgroundcolor, fontcolor = COLORS[name]
-                    generate_counter_video(name, backgroundcolor, fontcolor, height=height, duration=duration, crf=args.crf, codec=codec)
+                    generate_counter_video(name, height=height, duration=duration, crf=args.crf, codec=codec)
+            for left, right in MOSAIC_PAIRS:
+                if left in args.color and right in args.color:
+                    generate_mosaic_pair(left, right, height=height, crf=args.crf, codec=codec)
+            for direction in SLICER_SCENES:
+                generate_slicer_video(direction, height=height, crf=args.crf, codec=codec)
