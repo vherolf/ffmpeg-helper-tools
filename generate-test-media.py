@@ -36,6 +36,9 @@ COLORS = {
 # video lengths in seconds
 DURATIONS = [30, 60]
 
+# video and image heights in pixels, the width follows at 16:9 (720 -> 1280x720)
+RESOLUTIONS = [720]
+
 # digits drawn on the test images
 DIGITS = range(7)
 
@@ -48,20 +51,26 @@ def encoder_args(codec='x264', crf=None):
         crf = CODECS[codec]['crf']
     return CODECS[codec]['args'] + ['-crf', str(crf), '-pix_fmt', 'yuv420p']
 
+# 16:9 width for a height, rounded to an even number for yuv420p
+def width_for(height=720):
+    return round(height * 16 / 9 / 2) * 2
+
 def codec_dir(codec='x264'):
     out = CODECS[codec]['dir']
     out.mkdir(parents=True, exist_ok=True)
     return out
 
-# write text in the middle of the image
-def generate_test_image(name='white', text=u'1', width=1280, height=720, fontsize=700, fontcolor='black', backgroundcolor='white', image_dir=image_dir):
+# write text in the middle of the image, the font scales with the height (700 at 720p)
+def generate_test_image(name='white', text=u'1', height=720, fontcolor='black', backgroundcolor='white', image_dir=image_dir):
     image_dir.mkdir(parents=True, exist_ok=True)
+    width = width_for(height)
+    fontsize = height * 700 // 720
     font = ImageFont.truetype("FreeMono.ttf", fontsize, encoding="unic")
     canvas = Image.new('RGB', (width, height), backgroundcolor)
     draw = ImageDraw.Draw(canvas)
     # use anchor="mm" for center in middle (THANK YOU STACK OVERFLOW)
     draw.text((width/2, height/2), text, fontcolor, font, anchor="mm")
-    out = Path(image_dir, f'{name}{text}.png')
+    out = Path(image_dir, f'{name}{text}-{height}p.png')
     canvas.save(out, "PNG")
     logger.info('generated image %s', out)
     return out
@@ -71,7 +80,7 @@ def frame_number_filter(fontcolor='white', fontsize=50):
     fontfile = ImageFont.truetype("FreeMono.ttf", fontsize).path
     return (f"drawtext=fontfile={fontfile}:fontsize={fontsize}:fontcolor={fontcolor}"
             r":text='frame %{n}'"
-            ":x=(w-text_w)/2:y=h-text_h-20")
+            ":x=(w-text_w)/2:y=h-text_h-h/36")
 
 # aevalsrc expression for a soft plucked tune that loops the MELODY
 # every note is a sine plus a quiet octave, with a quick fade in and an exponential fade out
@@ -89,9 +98,11 @@ def melody_expression(melody=MELODY, basefrequency=261.63, notelength=0.5, volum
     return f'{volume}*{playing}*{envelope}*{tone}'
 
 # solid color video with a running seconds counter in the middle and the frame number below
-# plus a quiet looping tune (peaks around -22 dBFS) as audio
-def generate_counter_video(name='blue', backgroundcolor='blue', fontcolor='white', width=1280, height=720, duration=30, framerate=25, fontsize=500, volume=0.06, crf=None, codec='x264'):
-    outputname = Path(codec_dir(codec), f'{name}-{duration}.mp4')
+# plus a quiet looping tune (peaks around -24 dBFS) as audio, text scales with the height (500 at 720p)
+def generate_counter_video(name='blue', backgroundcolor='blue', fontcolor='white', height=720, duration=30, framerate=25, volume=0.06, crf=None, codec='x264'):
+    outputname = Path(codec_dir(codec), f'{name}-{duration}-{height}p.mp4')
+    width = width_for(height)
+    fontsize = height * 500 // 720
     fontfile = ImageFont.truetype("FreeMono.ttf", fontsize).path
     logger.info('generating counter video %s', outputname)
     counter = (f"drawtext=fontfile={fontfile}:fontsize={fontsize}:fontcolor={fontcolor}"
@@ -126,6 +137,8 @@ if __name__=='__main__':
                         help="background colors to generate (default: all)")
     parser.add_argument("--duration", nargs='+', type=int, default=DURATIONS,
                         help=f"video lengths in seconds (default: {' '.join(map(str, DURATIONS))})")
+    parser.add_argument("--resolution", nargs='+', type=int, default=RESOLUTIONS,
+                        help=f"heights in pixels, width is 16:9, e.g. 720 1080 2160 (default: {' '.join(map(str, RESOLUTIONS))})")
     parser.add_argument("--images-only", default=False, action="store_true",
                         help="only generate the test images in images/, no videos")
     args = parser.parse_args()
@@ -136,17 +149,19 @@ if __name__=='__main__':
         exit()
 
     # default behaviour without any commandline options
-    # generates <color><digit>.png test images for every color
-    for name in args.color:
-        backgroundcolor, fontcolor = COLORS[name]
-        for digit in DIGITS:
-            generate_test_image(name, f'{digit}', fontcolor=fontcolor, backgroundcolor=backgroundcolor)
+    # generates <color><digit>-<height>p.png test images for every color and resolution
+    for height in args.resolution:
+        for name in args.color:
+            backgroundcolor, fontcolor = COLORS[name]
+            for digit in DIGITS:
+                generate_test_image(name, f'{digit}', height=height, fontcolor=fontcolor, backgroundcolor=backgroundcolor)
     if args.images_only:
         exit()
 
-    # and <color>-<duration>.mp4 for every codec, color and duration
+    # and <color>-<duration>-<height>p.mp4 for every codec, resolution, color and duration
     for codec in args.codec:
-        for duration in args.duration:
-            for name in args.color:
-                backgroundcolor, fontcolor = COLORS[name]
-                generate_counter_video(name, backgroundcolor, fontcolor, duration=duration, crf=args.crf, codec=codec)
+        for height in args.resolution:
+            for duration in args.duration:
+                for name in args.color:
+                    backgroundcolor, fontcolor = COLORS[name]
+                    generate_counter_video(name, backgroundcolor, fontcolor, height=height, duration=duration, crf=args.crf, codec=codec)

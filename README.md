@@ -184,15 +184,20 @@ Same filename format requirement as `videoslicer-horizontal.py` (non-matching fi
 
 ### generate-test-media.py
 
-Generates solid color test videos with a running seconds counter in the middle and the frame number at the bottom — useful for testing the other scripts. It also writes still test images (a digit 0–6 on each color, `images/<color><digit>.png`, e.g. `blue3.png`) for testing ffmpeg with pictures.
+Generates solid color test videos with a running seconds counter in the middle and the frame number at the bottom — useful for testing the other scripts. It also writes still test images (a digit 0–6 on each color, `images/<color><digit>-<height>p.png`, e.g. `blue3-720p.png`) for testing ffmpeg with pictures.
 
-Videos are named `<color>-<duration>.mp4` (e.g. `blue-60.mp4`) for the colors blue, green, white, red, pink and darkgrey and the durations 30 and 60 seconds (1280x720, 25 fps, a quiet looping C major tune as AAC audio, CPU encoding).
+Videos are named `<color>-<duration>-<height>p.mp4` (e.g. `blue-60-720p.mp4`) for the colors blue, green, white, red, pink and darkgrey and the durations 30 and 60 seconds (720p by default, 25 fps, a quiet looping C major tune as AAC audio, CPU encoding).
+
+`--resolution` takes heights in pixels; the width follows at 16:9 (480 → 854x480, 720 → 1280x720, 1080 → 1920x1080, 2160 → 3840x2160). Text sizes scale with the height, so every resolution looks the same, just sharper.
 
 ```bash
 python generate-test-media.py                                  # x264 and av1, all colors and durations
 python generate-test-media.py --codec av1                      # only av1
 python generate-test-media.py --color blue red --duration 30   # a subset
-python generate-test-media.py --duration 720 3600              # longer videos, any length in seconds
+python generate-test-media.py --duration 720                   # 720 second videos instead of 30 and 60
+python generate-test-media.py --duration 10 120                # several lengths at once, one set per length
+python generate-test-media.py --resolution 1080                # 1080p instead of 720p
+python generate-test-media.py --resolution 720 1080 2160       # several resolutions at once
 python generate-test-media.py -c 30                            # same crf for every codec
 python generate-test-media.py --images-only                    # only the png test images
 python generate-test-media.py -l                               # list available fonts
