@@ -10,7 +10,7 @@ curl -sSL https://raw.githubusercontent.com/vherolf/ffmpeg-helper-tools/main/ins
 
 Run the same command again at any time to update.
 
-The script checks for system dependencies (`python3`, `pip3`, `ffmpeg`, `ffprobe`, `git`, and — non-blocking — `libmagic`), clones or pulls the repo into `./ffmpeg-helper-tools` (relative to where you run the command), creates a venv, and installs all packages.
+The script checks for system dependencies (`python3`, `pip3`, `ffmpeg`, `ffprobe`, `git`, and — non-blocking — `libmagic` and the FreeMono font), clones or pulls the repo into `./ffmpeg-helper-tools` (relative to where you run the command), creates a venv, and installs all packages.
 
 ### System dependencies
 
@@ -19,6 +19,8 @@ The script checks for system dependencies (`python3`, `pip3`, `ffmpeg`, `ffprobe
 **macOS:** `brew install git python3 ffmpeg`
 
 `archiver.py` additionally needs `libmagic1` (Ubuntu/Debian) / `libmagic` (macOS) — the installer checks for it and warns if missing, but won't block the rest of the install.
+
+`generate-test-media.py` additionally needs the FreeMono font: `sudo apt install fonts-freefont-ttf` (Ubuntu/Debian) / `brew install --cask font-freefont` (macOS). It also needs an ffmpeg built with `libfreetype` (text drawing) and `libsvtav1` (AV1) — the standard Ubuntu/Debian and Homebrew packages include both. Check with `ffmpeg -filters | grep drawtext` and `ffmpeg -encoders | grep svtav1`.
 
 ### Build standalone binaries
 
@@ -202,6 +204,12 @@ Output is written to subfolders of `videos/` in the current directory. Both code
 |---|---|---|
 | `videos/x264/` | H.264 (libx264) | 23 |
 | `videos/av1/` | AV1 (libsvtav1) | 35 |
+
+**Sound:** a quiet music-box style tune that loops every 4 seconds — C E G C G E C, then a half second rest. Each note is a short pluck that fades out, and a note starts on every full second when the counter changes, so you can hear if audio and video drift apart after a cut or merge. No audio files are involved: ffmpeg's `aevalsrc` computes the sound from a formula built by `melody_expression()`. To change it, edit in `generate-test-media.py`:
+
+- `MELODY = [0, 4, 7, 12, 7, 4, 0, None]` — semitones above middle C, one per half second, `None` is a rest
+- `volume=0.06` in `generate_counter_video()` — louder or quieter (peaks around -24 dB now)
+- `basefrequency=261.63` in `melody_expression()` — moves the whole tune higher or lower
 
 ---
 

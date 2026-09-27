@@ -33,6 +33,13 @@ else
     warn "libmagic not found — archiver.py needs it.  Hint: sudo apt install libmagic1  /  brew install libmagic"
 fi
 
+if { command -v fc-list &>/dev/null && fc-list | grep -q 'FreeMono'; } \
+   || ls /usr/share/fonts/truetype/freefont/FreeMono.ttf ~/Library/Fonts/FreeMono.* /Library/Fonts/FreeMono.* &>/dev/null; then
+    ok "FreeMono font found"
+else
+    warn "FreeMono font not found — generate-test-media.py needs it.  Hint: sudo apt install fonts-freefont-ttf  /  brew install --cask font-freefont"
+fi
+
 echo ""
 
 # ── clone or update ───────────────────────────────────────────────────────────
