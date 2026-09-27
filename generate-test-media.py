@@ -158,7 +158,8 @@ def generate_mosaic_pair(left='blue', right='green', height=720, duration=TOOL_T
                      duration=duration, crf=crf, codec=codec)
 
 # input for videoslicer-horizontal.py (3 scenes side by side) and videoslicer-vertical.py (2 scenes stacked)
-# the slicers need the filename format "YYYY-MM-DD HH-MM-SS.mp4", the time is the video length
+# the slicers need the filename format "YYYY-MM-DD HH-MM-SS.mp4": the year is the resolution and the time
+# the video length (0720-01-01 00-00-10.mp4), so every resolution slices into its own output folder
 def generate_slicer_video(direction='horizontal', height=720, duration=TOOL_TEST_DURATION, crf=None, codec='x264'):
     names, stack = SLICER_SCENES[direction]
     width = width_for(height)
@@ -166,7 +167,7 @@ def generate_slicer_video(direction='horizontal', height=720, duration=TOOL_TEST
     panels = [counter_panel(*COLORS[name], width, panelheight, duration, label=f'scene {i + 1}')
               for i, name in enumerate(names)]
     length = f'{duration // 3600:02}-{duration // 60 % 60:02}-{duration % 60:02}'
-    outputname = Path(codec_dir(codec), f'videoslicer-{direction}', f'{height}p', f'2000-01-01 {length}.mp4')
+    outputname = Path(codec_dir(codec), f'videoslicer-{direction}', f'{height}p', f'{height:04}-01-01 {length}.mp4')
     encode_video(outputname, panels, stack=stack, duration=duration, crf=crf, codec=codec)
 
 def list_font_families():

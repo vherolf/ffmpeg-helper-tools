@@ -167,8 +167,8 @@ Output is written to `<destination>/<date>/<time>/`. Defaults: source = current 
 
 ### videoslicer-vertical.py
 
-Splits a video into 2 equal vertical scenes using ffmpeg's crop filter.
-A video at 1920x1080 produces two 960x540 clips.
+Splits a video into 2 equal scenes, top and bottom half, using ffmpeg's crop filter.
+A video at 1920x1080 produces two 1920x540 clips.
 
 ```bash
 python videoslicer-vertical.py
@@ -215,8 +215,10 @@ Output is written to subfolders of `videos/` in the current directory. Both code
 | Folder | For | Content |
 |---|---|---|
 | `mosaic/<left>-<right>-<height>p/` | `mosaic.py`, `mosaic-left-right.py` | exactly 2 counter videos, `<pair>_left.mp4` and `<pair>_right.mp4` — pairs blue/green, red/white, pink/darkgrey |
-| `videoslicer-horizontal/<height>p/` | `videoslicer-horizontal.py` | `2000-01-01 00-00-10.mp4`, 3 scenes side by side (3840x720 at 720p) |
-| `videoslicer-vertical/<height>p/` | `videoslicer-vertical.py` | `2000-01-01 00-00-10.mp4`, 2 scenes stacked (1280x720 at 720p) |
+| `videoslicer-horizontal/<height>p/` | `videoslicer-horizontal.py` | `0720-01-01 00-00-10.mp4`, 3 scenes side by side (3840x720 at 720p) |
+| `videoslicer-vertical/<height>p/` | `videoslicer-vertical.py` | `0720-01-01 00-00-10.mp4`, 2 scenes stacked (1280x720 at 720p) |
+
+The slicer file names follow the required `YYYY-MM-DD HH-MM-SS` format with the resolution as the year and the length as the time (`1080-01-01 00-00-10.mp4` at 1080p), so every resolution gets its own output folder after slicing.
 
 Every scene has its own color, a `scene N` label, the counter and the frame number, so after slicing or merging you can see right away that each piece is the right one and still in sync.
 
