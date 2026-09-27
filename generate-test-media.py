@@ -3,7 +3,7 @@
 from PIL import Image, ImageDraw, ImageFont
 from pathlib import Path
 import subprocess
-from common import get_logger
+from common import get_logger, VIDEO_CODECS, video_encoder_args
 
 logger = get_logger(__name__)
 
@@ -12,16 +12,8 @@ image_dir = Path(Path.cwd(), 'images')
 
 FFMPEG = 'ffmpeg'
 
-# output subfolder, encoder options and default crf per codec
-# both are browser compatible (chrome, firefox, edge, safari 17+)
-CODECS = {
-    'x264': {'dir': Path(video_dir, 'x264'),
-             'args': ['-c:v', 'libx264', '-preset', 'slow', '-profile:v', 'high', '-movflags', '+faststart'],
-             'crf': 23},
-    'av1':  {'dir': Path(video_dir, 'av1'),
-             'args': ['-c:v', 'libsvtav1', '-preset', '6', '-movflags', '+faststart'],
-             'crf': 35},
-}
+# output subfolder per codec, encoder options and default crf are in common.VIDEO_CODECS
+CODEC_DIRS = {codec: Path(video_dir, codec) for codec in VIDEO_CODECS}
 
 # name used in the filename -> (background color for ffmpeg and pillow, font color)
 COLORS = {
@@ -58,17 +50,12 @@ SLICER_SCENES = {
 # C E G C G E C (rest) - a 4 second loop, one note lands on every full second of the counter
 MELODY = [0, 4, 7, 12, 7, 4, 0, None]
 
-def encoder_args(codec='x264', crf=None):
-    if crf is None:
-        crf = CODECS[codec]['crf']
-    return CODECS[codec]['args'] + ['-crf', str(crf), '-pix_fmt', 'yuv420p']
-
 # 16:9 width for a height, rounded to an even number for yuv420p
 def width_for(height=720):
     return round(height * 16 / 9 / 2) * 2
 
 def codec_dir(codec='x264'):
-    out = CODECS[codec]['dir']
+    out = CODEC_DIRS[codec]
     out.mkdir(parents=True, exist_ok=True)
     return out
 
@@ -136,7 +123,7 @@ def encode_video(outputname, panels, stack='hstack', duration=30, volume=0.06, c
                     '-i', f"aevalsrc='{melody_expression(volume=volume)}':s=48000:d={duration}",
                     '-filter_complex', graph,
                     '-map', '[v]', '-map', '0:a',
-                    *encoder_args(codec, crf),
+                    *video_encoder_args(codec, crf),
                     '-c:a', 'aac', '-b:a', '128k',
                     '-shortest',
                     outputname, '-y'], check=True)
@@ -181,7 +168,7 @@ if __name__=='__main__':
     parser.add_argument("-l", "--list-fonts-available", default=False, action="store_true")
     parser.add_argument("-c", "--crf", type=int, default=None,
                         help="crf for all codecs (default: x264 23, av1 35)")
-    parser.add_argument("--codec", nargs='+', choices=list(CODECS), default=list(CODECS),
+    parser.add_argument("--codec", nargs='+', choices=list(VIDEO_CODECS), default=list(VIDEO_CODECS),
                         help="codecs to generate: x264 -> videos/x264/, av1 -> videos/av1/ (default: all)")
     parser.add_argument("--color", nargs='+', choices=list(COLORS), default=list(COLORS),
                         help="background colors to generate (default: all)")

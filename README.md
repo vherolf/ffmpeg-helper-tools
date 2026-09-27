@@ -87,18 +87,19 @@ python analyzer.py -l                    # also log to ./analyzer.log
 
 ### compressor.py
 
-Re-encodes videos to H.265 (libx265) at CRF 28.
+Re-encodes videos to browser compatible MP4: H.264 (libx264) by default, or AV1 (libsvtav1) with `--codec av1`. Both play in Chrome, Firefox, Edge and Safari 17+. Video is converted to 8-bit 4:2:0 so it plays everywhere. AAC and MP3 audio is copied unchanged, any other audio (PCM, AC3/E-AC3, DTS, FLAC, Opus, …) is converted to AAC (192 kbit/s stereo, 384 kbit/s surround, channel layout kept).
 
 ```bash
 python compressor.py
 python compressor.py -s /path/to/videos -d /path/to/output
-python compressor.py -c 23               # lower CRF = higher quality (range 0–51)
+python compressor.py --codec av1         # AV1 instead of H.264, smaller files, slower
+python compressor.py -c 20               # lower CRF = higher quality (range 0–51)
 python compressor.py -n                  # dry run — print actions without encoding
 python compressor.py -l                  # also log to <destination>/compressor.log
 python compressor.py -l /path/to/file.log  # or log to a specific file
 ```
 
-Defaults: source = current directory, destination = `~/Desktop/compressed_videos`, CRF = 28.
+Defaults: source = current directory, destination = `~/Desktop/compressed_videos`, codec = x264, CRF = 23 (x264) / 35 (AV1).
 
 ---
 

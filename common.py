@@ -4,6 +4,34 @@ from pathlib import Path
 
 import ffmpeg
 
+# browser compatible video codecs (chrome, firefox, edge, safari 17+), CPU encoding
+# x264 is the default, av1 the second option; crf is the default quality per codec
+VIDEO_CODECS = {
+    'x264': {'args': ['-c:v', 'libx264', '-preset', 'slow', '-profile:v', 'high', '-movflags', '+faststart'],
+             'crf': 23},
+    'av1':  {'args': ['-c:v', 'libsvtav1', '-preset', '6', '-movflags', '+faststart'],
+             'crf': 35},
+}
+
+def video_encoder_args(codec='x264', crf=None):
+    if crf is None:
+        crf = VIDEO_CODECS[codec]['crf']
+    return VIDEO_CODECS[codec]['args'] + ['-crf', str(crf), '-pix_fmt', 'yuv420p']
+
+# audio codecs that play in mp4 in all browsers are copied, everything else
+# (pcm, ac3, e-ac3, dts, flac, opus, ...) is converted to aac
+BROWSER_AUDIO_CODECS = ('aac', 'mp3')
+
+def audio_encoder_args(filename):
+    try:
+        streams = [s for s in ffmpeg.probe(filename)['streams'] if s['codec_type'] == 'audio']
+    except ffmpeg.Error:
+        streams = []
+    if all(s['codec_name'] in BROWSER_AUDIO_CODECS for s in streams):
+        return ['-c:a', 'copy']
+    channels = max(s.get('channels', 2) for s in streams)
+    return ['-c:a', 'aac', '-b:a', '192k' if channels <= 2 else '384k']
+
 def get_logger(name):
     logger = logging.getLogger(name)
     if not logger.handlers:
